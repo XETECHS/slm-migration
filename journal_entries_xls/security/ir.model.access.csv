@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_order_journal_entries_xls,report.account.move.xls,model_report_account_move_xls,slm_encryption_reports.group_advanced_reports,1,1,1,1

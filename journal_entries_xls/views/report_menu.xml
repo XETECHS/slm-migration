@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report
+                id="partner_xlsx"
+                model="account.move"
+                string="Export to XLSX"
+                report_type="xlsx"
+                name="account.move.xls"
+                file="account_move_xls"
+                attachment_use="False"
+        />
+    </data>
+</odoo>

@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_airfare_details,access_airfare_details,model_airfare_details,base.group_system,1,1,1,1
+access_destination_city,access_destination_city,model_destination_city,base.group_system,1,1,1,1
+access_airfare_details_line,access_airfare_details_line,model_airfare_details_line,base.group_system,1,1,1,1
+access_flight_list,access_flight_list,model_flight_list,base.group_system,1,1,1,1
+access_flight_list,access_flight_list,model_flight_list,account.group_account_user,1,0,0,0
+access_flight_list_stop,access_flight_list_stop,model_flight_list_stop,base.group_system,1,1,1,1
+access_flight_list_stop,access_flight_list_stop,model_flight_list_stop,base.group_user,1,1,1,1
+access_flight_list,access_flight_list,model_flight_list,base.group_user,1,1,1,1
+access_profit_center,access_profit_center,model_profit_center,base.group_system,1,1,1,1
+access_account_analytic_mandatory,access_account_analytic_mandatory,model_account_analytic_mandatory,base.group_system,1,1,1,1

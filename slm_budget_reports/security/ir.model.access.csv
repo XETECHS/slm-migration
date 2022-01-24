@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_slm_budget_encryption_report,budget.encryption.report,model_budget_encryption_report,slm_encryption_reports.group_advanced_reports,1,1,1,1
+access_order_budget_encryption_mapping,budget.encryption.mapping,model_budget_encryption_mapping,slm_encryption_reports.group_advanced_reports,1,1,1,1
+access_order_budget_encryption_mapping_line,budget.encryption.mapping.line,model_budget_encryption_mapping_line,slm_encryption_reports.group_advanced_reports,1,1,1,1

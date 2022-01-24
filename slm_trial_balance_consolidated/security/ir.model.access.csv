@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_slm_trial_balance_consolidated_slm_trial_balance_consolidated,slm_trial_balance_consolidated.slm_trial_balance_consolidated,model_slm_trial_balance_consolidated_slm_trial_balance_consolidated,,1,0,0,0

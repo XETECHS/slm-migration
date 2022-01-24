@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <template id="search_template_tag">
+            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                <span class="fa fa-filter"/>
+                Tags:
+                <t t-set="selected_tags"
+                   t-value="', '.join(tag.get('name') for tag in options['tags'] if tag.get('selected'))"/>
+                <t t-if="selected_tags">
+                    <t t-esc="selected_tags"/>
+                </t>
+                <t t-else="">
+                    None selected
+                </t>
+            </a>
+            <div class="dropdown-menu o_filters_menu" role="menu">
+                <t t-foreach="options['tags']" t-as="tag">
+                    <a role="menuitem" class="dropdown-item js_account_report_choice_filter" t-att-title="tag.get('name')"
+                       data-filter="tags" t-att-data-id="tag.get('id')">
+                        <t t-esc="tag.get('name')"/>
+                    </a>
+                </t>
+            </div>
+        </template>
+
+        <template id="search_template_subgroups">
+            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                <span class="fa fa-filter"/>
+                Show subgroups:
+                <t t-set="show_subgroups"
+                   t-value="', '.join(option.get('name') for option in options['subgroups'] if option.get('selected'))"/>
+                <t t-if="show_subgroups">
+                    Yes
+                </t>
+                <t t-else="">
+                    No
+                </t>
+            </a>
+            <div class="dropdown-menu o_filters_menu" role="menu">
+                <t t-foreach="options['subgroups']" t-as="option">
+                    <a role="menuitem" class="dropdown-item js_account_report_choice_filter" t-att-title="option.get('name')"
+                       data-filter="subgroups" t-att-data-id="option.get('id')">
+                        <t t-esc="option.get('name')"/>
+                    </a>
+                </t>
+            </div>
+        </template>
+
+        <template id="lpl_search_template" inherit_id="account_reports.search_template">
+            <xpath expr="//div[@class='btn-group o_dropdown o_account_reports_filter_analytic']" position="after">
+                <div class="btn-group o_dropdown o_account_reports_filter_encryption"
+                     t-if="options.get('tags') != None">
+                    <t t-call="slm_lpl_reports.search_template_tag"/>
+                </div>
+                <div class="btn-group o_dropdown o_account_reports_filter_encryption"
+                     t-if="options.get('subgroups') != None">
+                    <t t-call="slm_lpl_reports.search_template_subgroups"/>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>
