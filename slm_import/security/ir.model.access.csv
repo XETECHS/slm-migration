@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_slm_import_file,access_slm_import_file,model_slm_import_file,base.group_system,1,1,1,1
+access_slm_import_file_row,access_slm_import_file_row,model_slm_import_file_row,base.group_system,1,1,1,1
+access_slm_import_file_category,access_slm_import_file_category,model_slm_import_file_category,base.group_system,1,1,1,1
+access_slm_import_file_sheet,access_slm_import_file_sheet,model_slm_import_file_sheet,base.group_system,1,1,1,1
+access_slm_import_file_error,access_slm_import_file_error,model_slm_import_file_error,base.group_system,1,1,1,1
+access_slm_import_file,access_slm_import_file,model_slm_import_file,account.group_account_user,1,1,1,1
+access_slm_import_file_row,access_slm_import_file_row,model_slm_import_file_row,account.group_account_user,1,1,1,1
+access_slm_import_file_sheet,access_slm_import_file_sheet,model_slm_import_file_sheet,account.group_account_user,1,1,1,1
+access_slm_import_file_error,access_slm_import_file_error,model_slm_import_file_error,account.group_account_user,1,1,1,1
+
