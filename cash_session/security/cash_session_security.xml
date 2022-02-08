@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_cash_user" model="res.groups">
+        <field name="name">Accountant Basic Cash Box</field>
+        <field name="category_id" ref="base.module_category_accounting_and_finance"/>
+        <field name="implied_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
+    </record>
+
+    <record id="rule_payment_cash_user" model="ir.rule">
+        <field name="name">Payment Cash Book</field>
+        <field name="model_id" ref="account.model_account_payment" />
+        <field name="groups" eval="[(4, ref('group_cash_user'))]"/>
+        <field name="domain_force">[('create_uid','=', user.id)]</field>
+    </record>
+
+    <record id="rule_cash_session_user" model="ir.rule">
+        <field name="name">Cash Session</field>
+        <field name="model_id" ref="model_cash_session" />
+        <field name="groups" eval="[(4, ref('group_cash_user'))]"/>
+        <field name="domain_force">[('user_id','=', user.id)]</field>
+    </record>
+
+    <record id="rule_cash_session_manager" model="ir.rule">
+        <field name="name">Cash Session Company</field>
+        <field name="model_id" ref="model_cash_session" />
+        <field name="groups" eval="[(4, ref('account.group_account_manager'))]"/>
+        <field name="domain_force">['|',('config_id.company_id','child_of',[user.company_id.id]),('config_id','=',False)]</field>
+    </record>
+
+</odoo>

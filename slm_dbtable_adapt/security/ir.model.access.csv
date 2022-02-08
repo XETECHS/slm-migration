@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_slm_dbtable_adapt_slm_dbtable_adapt,slm_dbtable_adapt.slm_dbtable_adapt,model_slm_dbtable_adapt_slm_dbtable_adapt,,1,0,0,0

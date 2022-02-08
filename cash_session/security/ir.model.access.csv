@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cash_session_manager,cash.session,model_cash_session,account.group_account_manager,1,1,1,1
+access_cash_config_manager,cash.config,model_cash_config,account.group_account_manager,1,1,1,1
+access_cash_session_invoice,cash.session,model_cash_session,account.group_account_invoice,1,1,0,0
+access_cash_session_user,cash.session,model_cash_session,group_cash_user,1,1,1,0
+access_cash_config_user,cash.config,model_cash_config,group_cash_user,1,0,0,0
+access_account_journal_cash_user,account.journal pos_user,account.model_account_journal,group_cash_user,1,0,0,0
+access_account_bank_statement_cash,account.bank.statement,account.model_account_bank_statement,group_cash_user,1,1,1,0
+access_account_bank_statement_line_cash,account.bank.statement.line,account.model_account_bank_statement_line,group_cash_user,1,1,1,0
+access_bank_statement_cashbox_user_session,account.bank.statement.cashbox user,account.model_account_bank_statement_cashbox,group_cash_user,1,1,1,0
+access_account_cashbox_line_user_session,account.cashbox.line user,account.model_account_cashbox_line,group_cash_user,1,1,1,0

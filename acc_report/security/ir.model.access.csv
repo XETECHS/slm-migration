@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_cost_group,access_cost_group,model_cost_group,base.group_user,1,1,1,1
+access_process_flow,access_process_flow,model_process_flow,base.group_user,1,1,1,1
+access_total_group,access_total_group,model_total_group,base.group_user,1,1,1,1
+access_default_cost_center_percentage,access_default_cost_center_percentage,model_default_cost_center_percentage,base.group_user,1,1,1,1
+access_default_cost_center_percentage_line,access_default_cost_center_percentage_line,model_default_cost_center_percentage_line,base.group_user,1,1,1,1
