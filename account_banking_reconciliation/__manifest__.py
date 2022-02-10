@@ -14,7 +14,7 @@
               "Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/account-reconcile",
     "depends": [
-        "account_voucher",
+        "account",
     ],
     "data": [
         "security/account_banking_reconciliation.xml",

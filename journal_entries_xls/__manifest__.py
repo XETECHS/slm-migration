@@ -40,4 +40,5 @@
         'views/report_menu.xml',
         'views/templates.xml',
     ],
+    'license': 'AGPL-3',
 }

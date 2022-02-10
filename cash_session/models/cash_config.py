@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import datetime
-from uuid import uuid4
-
-from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo import api, fields, models
 
 
 class CashConfig(models.Model):
@@ -19,7 +15,8 @@ class CashConfig(models.Model):
     def _default_invoice_journal(self):
         return self.env['account.journal'].search([('type', '=', 'sale')], limit=1)
 
-    name = fields.Char(string='Config Name', required=True, readonly=True, default='/')
+    name = fields.Char(string='Config Name', required=True,
+                       readonly=True, default='/')
     currency_id = fields.Many2one('res.currency',
                                   string="Currency", readonly=False)
     journal_ids = fields.Many2many(
@@ -28,7 +25,8 @@ class CashConfig(models.Model):
         domain="[('journal_user', '=', True ), ('type', 'in', ['bank', 'cash'])]",)
     cash_control = fields.Boolean(
         string='Cash Control', help="Check the amount of the cashbox at opening and closing.")
-    session_ids = fields.One2many('cash.session', 'config_id', string='Sessions')
+    session_ids = fields.One2many(
+        'cash.session', 'config_id', string='Sessions')
     company_id = fields.Many2one('res.company', string='Company',
                                  required=True, default=lambda self: self.env.user.company_id)
     journal_id = fields.Many2one(

@@ -32,7 +32,7 @@
     ],
     'data': [
         'security/security.xml',
-        'views/account_invoice_view.xml'
+        # 'views/account_invoice_view.xml'
     ],
     'sequence': 1,
     'installable': True,

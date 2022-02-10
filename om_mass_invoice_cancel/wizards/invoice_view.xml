@@ -1,6 +1,5 @@
 <odoo>
     <data>
-
         <record id="invoice_cancel_view" model="ir.ui.view">
             <field name="name">account.invoice.cancel.form</field>
             <field name="model">account.invoice.cancel</field>
@@ -18,12 +17,12 @@
             </field>
         </record>
 
-        <act_window id="action_invoice_cancel"
+<!--         <act_window id="action_invoice_cancel"
             multi="True"
             key2="client_action_multi" name="Cancel Invoice"
             view_id="invoice_cancel_view"
             res_model="account.invoice.cancel" src_model="account.invoice"
-            view_mode="form" target="new" view_type="form" />
+            view_mode="form" target="new" view_type="form" /> -->
 
     </data>
 </odoo>

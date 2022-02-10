@@ -21,7 +21,7 @@ odoo.define('web_export_view', function (require) {
                     .then(function (has_group) {
                         var export_btn = self.$el.find('.export_treeview_xls');
                         if (!has_group && !export_btn.length) {
-                            self.$el.find('.o_dropdown')
+                            self.$el.find('.dropdown')
                                 .parent().append(QWeb.render(
                                     'WebExportTreeViewXls', {widget: self}));
                             self.$el.find('.export_treeview_xls').on('click',

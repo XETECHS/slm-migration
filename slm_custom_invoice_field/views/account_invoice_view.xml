@@ -3,9 +3,9 @@
     <data>
 
         <record id="view_account_invoice_line_flight_slm" model="ir.ui.view">
-            <field name="name">view.account.invoice.line.flight.slm</field>
-            <field name="model">account.invoice</field>
-            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="name">view.account.move.line.flight.slm</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='currency_id']" position="after">
                     <field name="opercde" groups="slm_custom_invoice_field.group_new_fields_invoice_line_slm"/>
@@ -25,13 +25,13 @@
                     <field name="vltreg" groups="slm_custom_invoice_field.group_new_fields_invoice_line_slm"/>
                     <field name="required_flight_number" invisible="1"/>
                 </xpath>
-                <field name="date_due" position="attributes">
+                <field name="account_id" position="attributes">
                     <attribute name="required">1</attribute>
                 </field>
             </field>
         </record>
 
-        <record id="view_account_invoice_line_vendor_flight_slm" model="ir.ui.view">
+       <!--  <record id="view_account_invoice_line_vendor_flight_slm" model="ir.ui.view">
             <field name="name">view.account.invoice.line.vendor.flight.slm</field>
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_supplier_form"/>
@@ -65,6 +65,6 @@
 				</field>
             </field>
         </record>
-
+ -->
     </data>
 </odoo>

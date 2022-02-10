@@ -7,7 +7,7 @@ class purchase_order(models.Model):
 
     _inherit = 'purchase.order.line'
 
-    @api.multi
+    
     def _default_branch_id(self):
         branch_id = self.env['res.users'].browse(self._uid).branch_id.id
         return branch_id
@@ -15,7 +15,7 @@ class purchase_order(models.Model):
 
     branch_id = fields.Many2one('res.branch', related='order_id.branch_id',default=_default_branch_id)
 
-    @api.multi
+    
     def _create_stock_moves(self, picking):
        moves = self.env['stock.move']
        done = self.env['stock.move'].browse()
@@ -42,7 +42,7 @@ class purchase_order(models.Model):
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
-    @api.multi
+    
     def _default_branch_id(self):
         branch_id = self.env['res.users'].browse(self._uid).branch_id.id
         return branch_id
@@ -70,7 +70,7 @@ class PurchaseOrder(models.Model):
         return res
 
  
-    @api.multi
+    
     def action_view_invoice(self):
         '''
         This function returns an action that display existing vendor bills of given purchase order ids.

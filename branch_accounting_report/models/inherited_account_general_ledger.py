@@ -28,10 +28,10 @@ class report_account_general_ledger(models.AbstractModel):
         numbers = self.env['flight.list'].search([], order="name")
         return [{'id': c.id, 'name': c.name, 'selected': False} for c in numbers]
 
-    def _build_options(self, previous_options=None):
+    def _get_options(self, previous_options=None):
         if not previous_options:
             previous_options = {}
-        options = super(report_account_general_ledger, self)._build_options(previous_options)
+        options = super(report_account_general_ledger, self)._get_options(previous_options)
         if options.get('vlnr'):
             options['vlnr'] = self._get_options_vlnr()
         # Merge old options with default from this report

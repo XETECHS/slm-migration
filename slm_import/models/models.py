@@ -82,7 +82,7 @@ class ImportFile(models.Model):
 
         return res
 
-    @api.multi
+    
     def write(self, values):
         res = super(ImportFile, self).write(values)
         return res

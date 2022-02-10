@@ -20,30 +20,37 @@
 ##############################################################################
 
 {
-	'name': 'Layout Profit & Loss',
-	'summary': """Layout Profit & Loss""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Layout Profit & Loss',
+    'summary': """Layout Profit & Loss""",
+    'version': '1.0.',
+    'description': """
 Layout Profit & Loss
 
 """,
-	'author': 'Jonathan J. Guacarán R.--> jrivero@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['account','report_xlsx','slm_subgroup', 'slm_encryption_reports'],
-	'license': 'AGPL-3',
-	'data': [
-		'data/slm_reptemp_data.xml',
-		'security/ir.model.access.csv',
-		'wizard/account_layout_profitloss_report.xml',
-		'reports/report.xml',
-		'reports/report_layoutprofitloss.xml',
-		'views/slm_reptemp_view.xml',
-		'wizard/account_balance_sheet_report.xml',
-		'reports/report_balancesheet.xml',		
-	],
-	'demo': [],
-	'installable': True,
-	'auto_install': False,
+    'author': 'Jonathan J. Guacarán R.--> jrivero@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['account', 'report_xlsx', 'slm_subgroup', 'slm_encryption_reports'],
+    'license': 'AGPL-3',
+    'data': [
+            'data/slm_reptemp_data.xml',
+            'security/ir.model.access.csv',
+            'wizard/account_layout_profitloss_report.xml',
+            'reports/report.xml',
+            'reports/report_layoutprofitloss.xml',
+            'views/slm_reptemp_view.xml',
+            'wizard/account_balance_sheet_report.xml',
+            'views/business_unit_mapping_view.xml',
+            'views/encryption_mapping_view.xml',
+            'views/profit_center_mapping_view.xml',
+            'views/profit_center_view.xml',
+            'views/slm_group_mapping_view.xml',
+            'views/slm_group_total_mapping_view.xml',
+
+        'reports/report_balancesheet.xml',
+    ],
+    'demo': [],
+    'installable': True,
+    'auto_install': False,
 }

@@ -6,7 +6,6 @@ class Session(models.Model):
 
         total = fields.Float(compute='_compute_total', string='Total', digits=0, readonly=True)
 
-        @api.one
         @api.depends('cashbox_lines_ids')
         def _compute_total(self):
                 """ Calculates Total"""

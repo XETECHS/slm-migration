@@ -13,7 +13,7 @@
     "depends": ["stock_account", "stock"],
     "data": [
         "security/stock_account_inventory_force_date_security.xml",
-        "views/stock_inventory_view.xml",
+        # "views/stock_inventory_view.xml",
         "views/res_company_view.xml",
     ],
     "installable": True,

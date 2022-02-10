@@ -7,7 +7,6 @@ from odoo import models, api
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    @api.multi
     def _prepare_account_move_line(self, qty, cost,
                                    credit_account_id, debit_account_id):
         self.ensure_one()

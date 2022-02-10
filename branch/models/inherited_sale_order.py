@@ -6,7 +6,7 @@ from odoo import api, fields, models, _
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    @api.multi
+    
     def _default_branch_id(self):
         branch_id = self.env['res.users'].browse(self._uid).branch_id.id
         return branch_id
@@ -27,7 +27,7 @@ class SaleOrder(models.Model):
 
     branch_id = fields.Many2one('res.branch', default=_default_branch_id)
 
-    @api.multi
+    
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
         res['branch_id'] = self.branch_id.id

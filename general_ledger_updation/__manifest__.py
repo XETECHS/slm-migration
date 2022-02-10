@@ -12,12 +12,10 @@
 ''',
     'depends': ['account', 'account_reports'],
     'data': [
-        'wizard/payment_register_wiz.xml',
-        'views/account_payment_view.xml',
-        'views/account_invoice_view.xml',
         'views/account_reports.xml'
     ],
     'installable': True,
     'application': False,
     'auto_install': False,
+    'license': 'AGPL-3',
 }

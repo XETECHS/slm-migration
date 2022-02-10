@@ -20,27 +20,27 @@
 ##############################################################################
 
 {
-	'name': 'Invoice Custom Fields Flight SLM',
-	'summary': """INVOICE Custom Fields SLM""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Invoice Custom Fields Flight SLM',
+    'summary': """INVOICE Custom Fields SLM""",
+    'version': '1.0.',
+    'description': """
 Import Data
-	* Custom fields for the Customer Invoice & Vendor Invoice
-	* Custom fields for Account Move Line
-	
+    * Custom fields for the Customer Invoice & Vendor Invoice
+    * Custom fields for Account Move Line
 """,
-	'author': 'Luis Aquino --> laquino@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'slm_custom_field', 'branch'],
-	'license': 'AGPL-3',
-	'data': [
-		'views/account_invoice_view.xml',
-		'security/res_groups.xml',
-	],
-	'demo': [],
-	'sequence': 2,
-	'installable': True,
-	'auto_install': False,
+    'author': 'Luis Aquino --> laquino@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'slm_custom_field', 'branch'],
+    'license': 'AGPL-3',
+    'data': [
+            'security/res_groups.xml',
+            'views/account_invoice_view.xml',
+    ],
+    'demo': [],
+    'sequence': 2,
+    'installable': True,
+    'auto_install': False,
+
 }

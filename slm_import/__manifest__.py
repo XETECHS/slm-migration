@@ -20,25 +20,25 @@
 ##############################################################################
 
 {
-	'name': 'SLM import',
-	'summary': """Module for importing data from this party systems""",
-	'version': '1.0.',
-	'description': """
+    'name': 'SLM import',
+    'summary': """Module for importing data from this party systems""",
+    'version': '1.0.',
+    'description': """
         * Load xls or csv files
         * Detect errors
         * Check for mandatory rules
     """,
-	'author': 'Fernando Flores --> fflores@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account'],
-	'license': 'AGPL-3',
+    'author': 'Fernando Flores --> fflores@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account'],
+    'license': 'AGPL-3',
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
         # 'security/security.xml',
         'views/import_file_view.xml',
-	],
+    ],
 }

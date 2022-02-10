@@ -109,14 +109,16 @@
         </t>
     </template>
 
-    <report 
-        id="journal_entries_moce_print_id"
-        model = "account.move"
-        string = "Journal Entries"
-        report_type = "qweb-pdf"
-        name = "journal_entries_print.journal_entries_report_id"  
-        file = "journal_entries_print.journal_entries_report_id"
-    />
+    <!-- Journal Entries QWEB-->
+    <record id="journal_entries_moce_print_id" model="ir.actions.report">
+        <field name="name">Journal Entries</field>
+        <field name="model">account.move</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">journal_entries_print.journal_entries_report_id</field>
+        <field name="report_file">journal_entries_print.journal_entries_report_id</field>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_type">report</field>
+    </record>
 
      <record id="journal_entries_paperformat" model="report.paperformat">
             <field name="name">Journal Entries</field>

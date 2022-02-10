@@ -39,7 +39,7 @@ class Picking_wizard(models.TransientModel):
     option = fields.Selection([('create', 'Create'), ('skip', 'Skip ')], string='Operation')
     state = fields.Selection([('draft', 'Draft'), ('validate', 'Validated')], string='Import Stage Option')
     
-    @api.multi
+    
     def Import_picking_order(self):
         Log = self.env['log.management']
         partner_obj = self.env['res.partner']

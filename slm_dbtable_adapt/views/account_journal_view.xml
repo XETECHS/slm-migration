@@ -32,7 +32,7 @@
 		<field name="priority">5</field>
 		<field name="inherit_id" ref="base.view_currency_form"/>
 		<field name="arch" type="xml">
-			<xpath expr="//field[@name='rate']" position="after">
+			<xpath expr="//field[@name='active']" position="after">
 				<field name="currency_code"/>
 			</xpath>
 		</field>

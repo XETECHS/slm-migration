@@ -94,7 +94,6 @@
     <record id="action_slm_financial_reports_define_form" model="ir.actions.act_window">
         <field name="name">Layout Profit and Loss</field>
         <field name="res_model">slm.financial.reports.define</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_slm_financial_reports_define_search"/>
         <field name="view_id" ref="view_slm_financial_reports_define_tree"/>

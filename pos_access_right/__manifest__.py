@@ -15,10 +15,16 @@
     ],
     'data': [
         'security/res_groups.xml',
-        'static/src/xml/templates.xml',
+        # 'static/src/xml/templates.xml',
     ],
     'demo': [
         'demo/res_groups.xml',
     ],
+    'assets': {
+        'point_of_sale.assets': [
+            'pos_access_right/static/src/js/pos_access_right.js',
+            'pos_access_right/static/src/css/pos_access_right.css',
+        ],
+    },
     'installable': True,
 }

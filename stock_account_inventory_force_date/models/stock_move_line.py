@@ -8,7 +8,6 @@ from odoo import api, models
 class StockMoveLine(models.Model):
     _inherit = 'stock.move.line'
 
-    @api.multi
     def write(self, vals):
         forced_inventory_date = self.env.context.get(
             'forced_inventory_date', False)

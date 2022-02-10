@@ -13,7 +13,7 @@
     'website': '',
     'license': 'LGPL-3',
     'depends': [
-        'account', 'account_cancel'
+        'account'
     ],
     'data': [
         'wizards/invoice_view.xml',

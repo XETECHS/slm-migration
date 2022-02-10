@@ -35,7 +35,7 @@
         'reports/report_invoice_catering.xml',
         'reports/report_invoice_ground.xml',
         'reports/report_invoice_aircargo.xml',
-        'reports/report_purchaseorder.xml',
-        #'views/templates.xml',
-    ]
+        # 'reports/report_purchaseorder.xml',
+    ],
+    'license': 'AGPL-3',
 }

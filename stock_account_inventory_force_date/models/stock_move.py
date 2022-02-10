@@ -75,7 +75,6 @@ class StockMove(models.Model):
         move = self.env['account.move'].create(move_vals)
         move.post()
 
-    @api.multi
     def _replay_product_price_history_moves(self, forced_inventory_date):
         recs = self.env['product.price.history'].search([
             ('product_id', '=', self.product_id.id),
@@ -114,7 +113,6 @@ class StockMove(models.Model):
                 'price_unit': price_unit,
             })
 
-    @api.multi
     def _action_done(self):
         moves = super(StockMove, self)._action_done()
         forced_inventory_date = self.env.context.get(

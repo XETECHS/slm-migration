@@ -15,7 +15,6 @@ from . import inherited_pos_session
 from . import inherited_pos_order
 from . import inherited_pos_config
 from . import inherited_account_bank_statement_line
-from . import inherited_stock_inventory
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

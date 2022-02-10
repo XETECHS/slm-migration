@@ -21,7 +21,6 @@
  	<record id="action_cost_center_id" model="ir.actions.act_window">
         <field name="name">COST CENTER PROCESS</field>
         <field name="res_model">account.cost.center</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="account_cost_center_view"/>
         <field name="target">new</field>

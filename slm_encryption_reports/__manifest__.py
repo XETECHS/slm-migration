@@ -20,33 +20,28 @@
 ##############################################################################
 
 {
-	'name': 'Encryption reports SLM',
-	'summary': """Encryption reports SLM""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Encryption reports SLM',
+    'summary': """Encryption reports SLM""",
+    'version': '1.0.',
+    'description': """
         * Result overview per route
         * Encryption report
     """,
-	'author': 'Fernando Flores --> fflores@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'account_reports', 'slm_custom_field'],
-	'license': 'AGPL-3',
+    'author': 'Fernando Flores --> fflores@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'account_reports', 'slm_custom_field'],
+    'license': 'AGPL-3',
 
     # always loaded
     'data': [
-        'security/ir.model.access.csv',
+        # 'security/ir.model.access.csv',
         'security/security.xml',
         'views/views.xml',
         'views/report_encryption.xml',
-		'views/encryption_report_data.xml',
-		'views/encryption_mapping_view.xml',
-		'views/profit_center_mapping_view.xml',
-		'views/business_unit_mapping_view.xml',
-		'views/slm_group_mapping_view.xml',
-		'views/slm_group_total_mapping_view.xml',
-		'views/search_template_view.xml',
-		'views/report_financial.xml'
-	],
+        'views/encryption_report_data.xml',
+        'views/search_template_view.xml',
+        'views/report_financial.xml'
+    ],
 }

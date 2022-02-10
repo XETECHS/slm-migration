@@ -20,7 +20,6 @@
  	<record id="action_account_report_wiz" model="ir.actions.act_window">
         <field name="name">Account Report</field>
         <field name="res_model">account.report.wizard</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="account_report_wizard_view"/>
         <field name="target">new</field>

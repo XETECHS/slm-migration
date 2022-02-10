@@ -20,22 +20,23 @@
 ##############################################################################
 
 {
-	'name': 'Trial Balance Consolidated SLM',
-	'summary': """Consolidated the sames accounts for different companies""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Trial Balance Consolidated SLM',
+    'summary': """Consolidated the sames accounts for different companies""",
+    'version': '1.0.',
+    'description': """
     Consolidated the sames accounts for different companies
     """,
-	'author': 'Fernando Flores --> fflores@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'account_reports'],
+    'author': 'Fernando Flores --> fflores@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'account_reports'],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
-        'views/views.xml',
-        'views/templates.xml',
+        # 'views/views.xml',
+        # 'views/templates.xml',
     ],
+    'license': 'AGPL-3',
 }

@@ -7,7 +7,7 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//sheet/notebook/page[@name='other_information']/group[1]/group[@name='technical']"
+                <xpath expr="//sheet/notebook/page[@name='other_information']// group[@name='sale_reporting']"
                        position="after">
                     <!-- Add your fields or attributes here -->
                     <group string="Branch" name="branch">

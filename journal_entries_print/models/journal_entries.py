@@ -27,7 +27,7 @@ from odoo import api, models
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    @api.multi
+    
     def total_debit_credit(self):
         res = {}
         for move in self:

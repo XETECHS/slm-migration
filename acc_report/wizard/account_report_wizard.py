@@ -114,7 +114,7 @@ class AccountReportWizard(models.TransientModel):
 
         return account_res
 
-    @api.multi
+    
     def get_overhead_value(self, movelines, report_type):
         # overhead_data = {}
         total = 0.0
@@ -140,7 +140,7 @@ class AccountReportWizard(models.TransientModel):
                         total = balance * acc_id.ragio / 100
         return total
 
-    @api.multi
+    
     def get_income_data(self):
         income_dict = {}
         for grp in self.env['total.group'].search([]):
@@ -151,7 +151,7 @@ class AccountReportWizard(models.TransientModel):
                 income_dict[grp.name] = acc_list
         return income_dict
 
-    @api.multi
+    
     def get_expense_data(self):
         expense_dict = {}
         for grp in self.env['total.group'].search([]):
@@ -162,7 +162,7 @@ class AccountReportWizard(models.TransientModel):
                 expense_dict[grp.name] = acc_list
         return expense_dict
 
-    @api.multi
+    
     def get_other_income_data(self):
         other_income_dict = {}
         for grp in self.env['total.group'].search([]):
@@ -173,7 +173,7 @@ class AccountReportWizard(models.TransientModel):
                 other_income_dict[grp.name] = acc_list
         return other_income_dict
 
-    @api.multi
+    
     def get_other_expense_data(self):
         other_expense_dict = {}
         for grp in self.env['total.group'].search([]):
@@ -184,7 +184,7 @@ class AccountReportWizard(models.TransientModel):
                 other_expense_dict[grp.name] = acc_list
         return other_expense_dict
 
-    @api.multi
+    
     def get_ma_account_record(self, workbook):
         worksheet = workbook.add_sheet('Mid Atlantic - Chart')
         header_bold = xlwt.easyxf("font: bold on, height 150;")
@@ -397,7 +397,7 @@ class AccountReportWizard(models.TransientModel):
             worksheet.write(row, col, total + total_overhead, style2)
             row += 1
 
-    @api.multi
+    
     def get_ragio_account_record(self, workbook):
         worksheet = workbook.add_sheet('Ragio - Chart')
         header_bold = xlwt.easyxf("font: bold on, height 150;")
@@ -612,7 +612,7 @@ class AccountReportWizard(models.TransientModel):
             worksheet.write(row, col, total + total_overhead, style2)
             row += 1
 
-    @api.multi
+    
     def get_cargo_account_record(self, workbook):
         worksheet = workbook.add_sheet('Cargo - Chart')
         header_bold = xlwt.easyxf("font: bold on, height 150;")
@@ -827,7 +827,7 @@ class AccountReportWizard(models.TransientModel):
             worksheet.write(row, col, total + total_overhead, style2)
             row += 1
 
-    @api.multi
+    
     def get_region_break_record(self, workbook):
         worksheet = workbook.add_sheet('Region Break')
         header_bold = xlwt.easyxf("font: bold on;")
@@ -949,7 +949,7 @@ class AccountReportWizard(models.TransientModel):
         row += 1
         worksheet.write(row, col, int(2000))
 
-    @api.multi
+    
     def download_excel_file(self):
         workbook = xlwt.Workbook()
         if self.report_type == 'ma':

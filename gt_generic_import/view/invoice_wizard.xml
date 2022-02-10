@@ -55,7 +55,6 @@
             <field name="name">Import Invoice</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">invoice.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>

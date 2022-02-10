@@ -152,7 +152,6 @@
         <field name="name">Account Invoice EMI</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.invoice.emi</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="context">{'default_emi_type': 'income'}</field>
         <field name="domain">[('emi_type', '=', 'income')]</field>
@@ -163,7 +162,6 @@
         <field name="name">Account Invoice EMI</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.invoice.emi</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="context">{'default_emi_type': 'expense'}</field>
         <field name="domain">[('emi_type', '=', 'expense')]</field>
@@ -174,7 +172,6 @@
         <field name="name">Account Invoice EMI</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.invoice.emi</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="context">{'search_default_partner_id': active_id}</field>
         <field name="view_id" ref="view_account_invoice_emi_tree"/>
@@ -243,7 +240,6 @@
         <field name="name">EMI Line</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.invoice.emi.line</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_account_invoice_emi_line_tree"/>
     </record>

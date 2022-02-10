@@ -68,9 +68,9 @@ class AccountMoveLine(models.Model):
     vltreg = fields.Char('VLTREG')
     required_flight_number = fields.Boolean('Is the fligh number required? (internal field)',
                                             compute='_is_flight_number_required')
-    required_analytic_account = fields.Boolean('Is the analytical account required? (internal field)', default=False)
+    required_analytic_account = fields.Boolean(
+        'Is the analytical account required? (internal field)', default=False)
 
-    @api.multi
     @api.onchange('account_id')
     def _filter_analytic_account(self):
         for record in self:
@@ -80,7 +80,8 @@ class AccountMoveLine(models.Model):
                     record.required_analytic_account = True
                 else:
                     record.required_analytic_account = False
-                analytic_accounts = MandatoryAnalyticAccount.search_mandatory_accounts(code, self.env.cr)
+                analytic_accounts = MandatoryAnalyticAccount.search_mandatory_accounts(
+                    code, self.env.cr)
                 record.account_analytic_id = None
                 if analytic_accounts:
                     res = {
@@ -95,6 +96,7 @@ class AccountMoveLine(models.Model):
     @api.depends('analytic_account_id', 'account_id')
     def _is_flight_number_required(self):
         for record in self:
+            record.required_flight_number = False
             if record.account_id and record.analytic_account_id:
                 if MandatoryAnalyticAccount.check_required_fligh_number(record.account_id.code, record.analytic_account_id.id,
                                                                         self.env.cr):

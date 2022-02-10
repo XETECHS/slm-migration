@@ -5,34 +5,30 @@ from odoo.exceptions import UserError
 from odoo.tools.float_utils import float_compare
 
 
-class AccountInvoice(models.Model):
-    _inherit = 'account.invoice'
+class AccountMove(models.Model):
+    _inherit = 'account.move'
 
-    @api.multi
     def _default_branch_id(self):
-        print ("sssssssssssssssssssssssssssssssssssssssssssss",self._context.get('branch_id'))
         if not self._context.get('branch_id'):
-           branch_id = self.env['res.users'].browse(self._uid).branch_id.id
+            branch_id = self.env['res.users'].browse(self._uid).branch_id.id
         else:
-           branch_id =  self._context.get('branch_id')
+            branch_id = self._context.get('branch_id')
         return branch_id
 
     branch_id = fields.Many2one('res.branch', default=_default_branch_id)
 
-
-    @api.multi
     def action_move_create(self):
         """ Creates invoice related analytics and financial move lines """
         account_move = self.env['account.move']
 
         for inv in self:
             if not inv.journal_id.sequence_id:
-                raise UserError(_('Please define sequence on the journal related to this invoice.'))
+                raise UserError(
+                    _('Please define sequence on the journal related to this invoice.'))
             if not inv.invoice_line_ids.filtered(lambda line: line.account_id):
                 raise UserError(_('Please add at least one invoice line.'))
             if inv.move_id:
                 continue
-
 
             if not inv.date_invoice:
                 inv.write({'date_invoice': fields.Date.context_today(self)})
@@ -43,20 +39,23 @@ class AccountInvoice(models.Model):
             # create move lines (one per invoice line + eventual taxes and analytic lines)
             iml = inv.invoice_line_move_line_get()
             for line in iml:
-                line['branch_id']=inv.branch_id.id
+                line['branch_id'] = inv.branch_id.id
             iml += inv.tax_line_move_line_get()
 
             diff_currency = inv.currency_id != company_currency
             # create one move line for the total and possibly adjust the other lines amount
-            total, total_currency, iml = inv.compute_invoice_totals(company_currency, iml)
+            total, total_currency, iml = inv.compute_invoice_totals(
+                company_currency, iml)
 
             name = inv.name or ''
             if inv.payment_term_id:
-                totlines = inv.payment_term_id.with_context(currency_id=company_currency.id).compute(total, inv.date_invoice)[0]
+                totlines = inv.payment_term_id.with_context(
+                    currency_id=company_currency.id).compute(total, inv.date_invoice)[0]
                 res_amount_currency = total_currency
                 for i, t in enumerate(totlines):
                     if inv.currency_id != company_currency:
-                        amount_currency = company_currency._convert(t[1], inv.currency_id, inv.company_id, inv._get_currency_rate_date() or fields.Date.today())
+                        amount_currency = company_currency._convert(
+                            t[1], inv.currency_id, inv.company_id, inv._get_currency_rate_date() or fields.Date.today())
                     else:
                         amount_currency = False
 
@@ -86,7 +85,8 @@ class AccountInvoice(models.Model):
                     'currency_id': diff_currency and inv.currency_id.id,
                     'invoice_id': inv.id
                 })
-            part = self.env['res.partner']._find_accounting_partner(inv.partner_id)
+            part = self.env['res.partner']._find_accounting_partner(
+                inv.partner_id)
             line = [(0, 0, self.line_get_convert(l, part.id)) for l in iml]
             line = inv.group_lines(iml, line)
 
@@ -99,12 +99,12 @@ class AccountInvoice(models.Model):
                 'journal_id': inv.journal_id.id,
                 'date': date,
                 'narration': inv.comment,
-                'branch_id':inv.branch_id.id
+                'branch_id': inv.branch_id.id
             }
             move = account_move.create(move_vals)
             # Pass invoice in method post: used if you want to get the same
             # account move reference when creating the same invoice after a cancelled one:
-            move.post(invoice = inv)
+            move.post(invoice=inv)
             # make the invoice point to that move
             vals = {
                 'move_id': move.id,
@@ -113,7 +113,7 @@ class AccountInvoice(models.Model):
             }
             inv.write(vals)
             for move_line in move.line_ids:
-                move_line.branch_id  =  inv.branch_id.id    
+                move_line.branch_id = inv.branch_id.id
         return True
 
     # @api.model
@@ -164,7 +164,8 @@ class AccountInvoice(models.Model):
                     for child_tax in tax.children_tax_ids:
                         done_taxes.append(child_tax.id)
 
-                analytic_tag_ids = [(4, analytic_tag.id, None) for analytic_tag in tax_line.analytic_tag_ids]
+                analytic_tag_ids = [(4, analytic_tag.id, None)
+                                    for analytic_tag in tax_line.analytic_tag_ids]
                 res.append({
                     'invoice_tax_line_id': tax_line.id,
                     'tax_line_id': tax_line.tax_id.id,
@@ -177,7 +178,7 @@ class AccountInvoice(models.Model):
                     'account_analytic_id': tax_line.account_analytic_id.id,
                     'analytic_tag_ids': analytic_tag_ids,
                     'invoice_id': self.id,
-                    'branch_id':self.branch_id.id,
+                    'branch_id': self.branch_id.id,
                     'tax_ids': [(6, 0, list(done_taxes))] if tax_line.tax_id.include_base_amount else []
                 })
                 done_taxes.append(tax.id)
@@ -187,7 +188,7 @@ class AccountInvoice(models.Model):
     def _anglo_saxon_purchase_move_lines(self, i_line, res):
         """Return the additional move lines for purchase invoices and refunds.
 
-        i_line: An account.invoice.line object.
+        i_line: An account.move.line object.
         res: The move line entries produced so far by the parent move_line_get.
         """
         inv = i_line.invoice_id
@@ -202,14 +203,16 @@ class AccountInvoice(models.Model):
                 acc = i_line.product_id.categ_id.property_account_creditor_price_difference_categ
             acc = fpos.map_account(acc).id
             # reference_account_id is the stock input account
-            reference_account_id = i_line.product_id.product_tmpl_id.get_product_accounts(fiscal_pos=fpos)['stock_input'].id
+            reference_account_id = i_line.product_id.product_tmpl_id.get_product_accounts(
+                fiscal_pos=fpos)['stock_input'].id
             diff_res = []
             # calculate and write down the possible price difference between invoice price and product price
             for line in res:
                 if line.get('invl_id', 0) == i_line.id and reference_account_id == line['account_id']:
                     # valuation_price unit is always expressed in invoice currency, so that it can always be computed with the good rate
                     valuation_price_unit = company_currency._convert(
-                        i_line.product_id.uom_id._compute_price(i_line.product_id.standard_price, i_line.uom_id),
+                        i_line.product_id.uom_id._compute_price(
+                            i_line.product_id.standard_price, i_line.uom_id),
                         inv.currency_id,
                         company=inv.company_id, date=fields.Date.today(), round=False,
                     )
@@ -218,9 +221,10 @@ class AccountInvoice(models.Model):
                     if i_line.product_id.cost_method != 'standard' and i_line.purchase_line_id:
                         po_currency = i_line.purchase_id.currency_id
                         po_company = i_line.purchase_id.company_id
-                        #for average/fifo/lifo costing method, fetch real cost price from incomming moves
+                        # for average/fifo/lifo costing method, fetch real cost price from incomming moves
                         valuation_price_unit = po_currency._convert(
-                            i_line.purchase_line_id.product_uom._compute_price(i_line.purchase_line_id.price_unit, i_line.uom_id),
+                            i_line.purchase_line_id.product_uom._compute_price(
+                                i_line.purchase_line_id.price_unit, i_line.uom_id),
                             inv.currency_id,
                             company=po_company, date=inv.date or inv.date_invoice, round=False,
                         )
@@ -230,9 +234,11 @@ class AccountInvoice(models.Model):
                             ('state', '=', 'done'), ('product_qty', '!=', 0.0)
                         ])
                         if self.type == 'in_refund':
-                            valuation_stock_move = valuation_stock_move.filtered(lambda m: m._is_out())
+                            valuation_stock_move = valuation_stock_move.filtered(
+                                lambda m: m._is_out())
                         elif self.type == 'in_invoice':
-                            valuation_stock_move = valuation_stock_move.filtered(lambda m: m._is_in())
+                            valuation_stock_move = valuation_stock_move.filtered(
+                                lambda m: m._is_in())
 
                         if valuation_stock_move:
                             valuation_price_unit_total = 0
@@ -242,13 +248,15 @@ class AccountInvoice(models.Model):
                                 # currency rate corresponding to the original stock move
                                 valuation_date = val_stock_move.origin_returned_move_id.date or val_stock_move.date_expected
                                 valuation_price_unit_total += company_currency._convert(
-                                    abs(val_stock_move.price_unit) * val_stock_move.product_qty,
+                                    abs(val_stock_move.price_unit) *
+                                    val_stock_move.product_qty,
                                     inv.currency_id,
                                     company=inv.company_id, date=valuation_date, round=False,
                                 )
                                 valuation_total_qty += val_stock_move.product_qty
                             valuation_price_unit = valuation_price_unit_total / valuation_total_qty
-                            valuation_price_unit = i_line.product_id.uom_id._compute_price(valuation_price_unit, i_line.uom_id)
+                            valuation_price_unit = i_line.product_id.uom_id._compute_price(
+                                valuation_price_unit, i_line.uom_id)
                             line_quantity = valuation_total_qty
 
                         elif i_line.product_id.cost_method == 'fifo':
@@ -264,12 +272,15 @@ class AccountInvoice(models.Model):
                     if float_compare(valuation_price_unit, i_line.price_unit, precision_digits=invoice_cur_prec) != 0 and float_compare(line['price_unit'], i_line.price_unit, precision_digits=invoice_cur_prec) == 0:
 
                         # price with discount and without tax included
-                        price_unit = i_line.price_unit * (1 - (i_line.discount or 0.0) / 100.0)
+                        price_unit = i_line.price_unit * \
+                            (1 - (i_line.discount or 0.0) / 100.0)
                         tax_ids = []
                         if line['tax_ids']:
-                            #line['tax_ids'] is like [(4, tax_id, None), (4, tax_id2, None)...]
-                            taxes = self.env['account.tax'].browse([x[1] for x in line['tax_ids']])
-                            price_unit = taxes.compute_all(price_unit, currency=inv.currency_id, quantity=1.0)['total_excluded']
+                            # line['tax_ids'] is like [(4, tax_id, None), (4, tax_id2, None)...]
+                            taxes = self.env['account.tax'].browse(
+                                [x[1] for x in line['tax_ids']])
+                            price_unit = taxes.compute_all(
+                                price_unit, currency=inv.currency_id, quantity=1.0)['total_excluded']
                             for tax in taxes:
                                 tax_ids.append((4, tax.id, None))
                                 for child in tax.children_tax_ids:
@@ -301,20 +312,9 @@ class AccountInvoice(models.Model):
         return []
 
 
-class AccountMove(models.Model):
-    _inherit = 'account.move'
-
-    @api.multi
-    def _default_branch_id(self):
-        branch_id = self.env['res.users'].browse(self._uid).branch_id.id
-        return branch_id
-
-    branch_id = fields.Many2one('res.branch', default=_default_branch_id)
-
 class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
 
-    @api.multi
     def _default_branch_id(self):
         branch_id = self.env['res.users'].browse(self._uid).branch_id.id
         return branch_id

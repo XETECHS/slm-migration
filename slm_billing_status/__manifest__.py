@@ -20,23 +20,23 @@
 ##############################################################################
 
 {
-	'name': 'Purchase Billing Status',
-	'summary': """Purchase Billing Status""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Purchase Billing Status',
+    'summary': """Purchase Billing Status""",
+    'version': '1.0.',
+    'description': """
 Purchase Billing Status
 
 """,
-	'author': 'Jonathan J. Guacarán R.--> jrivero@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'Purchases',
-	'depends': ['purchase'],
-	'license': 'AGPL-3',
-	'data': [
-		'views/purchase_view.xml',		
-	],
-	'demo': [],
-	'installable': True,
-	'auto_install': False,
+    'author': 'Jonathan J. Guacarán R.--> jrivero@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'Purchases',
+    'depends': ['purchase'],
+    'license': 'AGPL-3',
+    'data': [
+            'views/purchase_view.xml',
+    ],
+    'demo': [],
+    'installable': True,
+    'auto_install': False,
 }

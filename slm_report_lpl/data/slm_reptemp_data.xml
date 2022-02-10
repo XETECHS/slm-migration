@@ -5,7 +5,6 @@
         <record id="slm_financial_reports_define_lpl" model="slm.financial.reports.define">
             <field name="name">Layout Profit and Loss</field>
             <field name="description">Layout Profit and Loss</field>
-            <field name="user_id" ref="base.user_root"/>
             <field name="type">pyl</field>
         </record>
          <record id="slm_financial_reports_define_line_E001" model="slm.financial.reports.define.lines">
@@ -103,7 +102,6 @@
         <record id="slm_financial_reports_define_lbs" model="slm.financial.reports.define">
             <field name="name">Layout Balance Sheet</field>
             <field name="description">Layout Balance Sheet</field>
-            <field name="user_id" ref="base.user_root"/>
             <field name="type">bls</field>
         </record>
         

@@ -18,7 +18,7 @@ class AccountCostCenter(models.TransientModel):
 
     datas = fields.Binary('File')
 
-    @api.multi
+    
     def download__excel_file(self):
         cost_group_data = self.env['cost.group'].search([('is_overhead', '=', False)])
         account_obj = self.env['account.analytic.account']

@@ -39,7 +39,7 @@ class Bank_account_wizard(models.TransientModel):
     option = fields.Selection([('create', 'Create'), ('skip', 'Skip ')], string='Operation')
     
 
-    @api.multi
+    
     def Import_Bank_AC(self):
         Log = self.env['log.management']
         Partner=self.env['res.partner']

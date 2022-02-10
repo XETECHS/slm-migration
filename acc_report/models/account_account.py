@@ -20,7 +20,7 @@ class AccountAccount(models.Model):
                                   ('other_expense', 'Other Expense'),
                                   ], string="Group Type")
 
-    @api.multi
+    
     def write(self, vals):
         res = super(AccountAccount, self).write(vals)
         total = self.ma + self.ragio + self.cargo

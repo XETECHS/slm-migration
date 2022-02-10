@@ -3,9 +3,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import json
-from openerp import http
-from openerp.addons.web.controllers import main
-from openerp.addons.mail.models import mail_template
+from odoo import http
+from odoo.addons.web.controllers import main
+from odoo.addons.mail.models import mail_template
 
 
 class Reports(main.Reports):
@@ -19,7 +19,7 @@ class Reports(main.Reports):
         action = json.loads(action)
         context = dict(http.request.context)
         context.update(action["context"])
-        report_xml = http.request.env['ir.actions.report.xml']
+        report_xml = http.request.env['ir.actions.report']
         reports = report_xml.search([
             ('report_name', '=', action['report_name']),
             ('download_filename', '!=', False)])

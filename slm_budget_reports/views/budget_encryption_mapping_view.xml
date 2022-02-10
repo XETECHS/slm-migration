@@ -51,7 +51,6 @@
         <record id="action_budget_encryption_mapping" model="ir.actions.act_window">
             <field name="name">Budget Encryption Mapping</field>
             <field name="res_model">budget.encryption.mapping</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_budget_encryption_mapping_tree"/>
             <field name="help" type="html">

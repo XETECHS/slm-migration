@@ -44,12 +44,12 @@
 
     	<!-- Add custom browseinfo_search_template  -->
         <template id="browseinfo_search_template" inherit_id="account_reports.search_template">
-            <xpath expr="//div[@class='btn-group o_dropdown o_account_reports_filter_analytic']" position="after">
+            <xpath expr="//div[@class='btn-group dropdown o_account_reports_filter_analytic']" position="after">
             
-				<div class="btn-group o_dropdown o_account_reports_filter_branch">
+				<div class="btn-group dropdown o_account_reports_filter_branch">
 					<t t-call="branch_accounting_report.search_template_branch"/>
 				</div>
-				<div class="btn-group o_dropdown o_account_reports_filter_analytic"
+				<div class="btn-group dropdown o_account_reports_filter_analytic"
                      t-if="options.get('vlnr')">
                     <t t-call="branch_accounting_report.search_template_vlnr"/>
                 </div>

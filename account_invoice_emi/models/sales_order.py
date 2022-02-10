@@ -57,7 +57,7 @@ class ResPartner(models.Model):
     _name = 'res.partner'
     _inherit = 'res.partner'
 
-    @api.multi
+    
     def _account_invoice_emi_total(self):
         if not self.ids:
             self.total_account_invoice_emi = 0.0

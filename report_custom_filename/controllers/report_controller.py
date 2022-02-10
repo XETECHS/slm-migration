@@ -2,23 +2,23 @@
 # Copyright 2014 Therp BV (<http://therp.nl>).
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from openerp import http
-from openerp.addons.mail.models import mail_template
-from openerp.addons.report.controllers.main import ReportController
-from openerp.addons.web.controllers.main import content_disposition
+from odoo import http
+from odoo.addons.mail.models import mail_template
+from odoo.addons.web.controllers.main import ReportController
+from odoo.addons.web.controllers.main import content_disposition
 
 
 class ReportController(ReportController):
     @http.route([
-        '/report/<path:converter>/<reportname>',
-        '/report/<path:converter>/<reportname>/<docids>',
+        '/report/<converter>/<reportname>',
+        '/report/<converter>/<reportname>/<docids>',
     ])
     def report_routes(self, reportname, docids=None, converter=None, **data):
         response = super(ReportController, self).report_routes(
             reportname, docids=docids, converter=converter, **data)
         if docids:
             docids = [int(i) for i in docids.split(',')]
-        report_xml = http.request.session.model('ir.actions.report.xml')
+        report_xml = http.request.session.model('ir.actions.report')
         report_ids = report_xml.search(
             [('report_name', '=', reportname)])
         for report in report_xml.browse(report_ids):

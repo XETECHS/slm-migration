@@ -36,7 +36,7 @@
 		<field name="name">Data Import from SLM</field>
 		<field name="res_model">wizard.data.import</field>
 		<field name="type">ir.actions.act_window</field>
-		<field name="view_type">form</field>
+		
 		<field name="view_mode">form</field>
 		<field name="view_id" ref="wizard_data_import_edgar_form"/>
 		<field name="context">{'default_type_transactions': 'edgar_app'}</field>
@@ -49,7 +49,7 @@
 		<field name="name">Delete data from SLM</field>
 		<field name="res_model">wizard.data.import</field>
 		<field name="type">ir.actions.act_window</field>
-		<field name="view_type">form</field>
+		
 		<field name="view_mode">form</field>
 		<field name="view_id" ref="wizard_data_import_edgar_form"/>
 		<field name="context">{'default_type_transactions': 'delete_table'}</field>

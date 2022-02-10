@@ -39,7 +39,7 @@ class Inventory_wizard(models.TransientModel):
     option = fields.Selection([('create', 'Create'), ('skip', 'Skip ')], string='Operation')
     state = fields.Selection([('draft', 'Draft'), ('validate', 'Validated')], string='Import Stage Option')
     
-    @api.multi
+    
     def Import_inventory(self):
         if self.file_type and self.data_file and self.option and self.imp_product_by:
             try:

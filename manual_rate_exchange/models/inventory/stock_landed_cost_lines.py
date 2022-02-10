@@ -5,7 +5,6 @@ from odoo.exceptions import ValidationError
 import logging
 
 
-
 _logger = logging.getLogger(__name__)
 
 
@@ -14,7 +13,6 @@ class StockLandedCostLine(models.Model):
 
     currency_value = fields.Float()
 
-
     @api.onchange('currency_value')
     def stock_landed_cost_lines(self):
 
@@ -22,4 +20,4 @@ class StockLandedCostLine(models.Model):
             self.price_unit = self.currency_value * self.cost_id.rate_exchange
 
         else:
-            self.price_unit=self.currency_value
+            self.price_unit = self.currency_value

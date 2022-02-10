@@ -16,7 +16,7 @@ from lxml import etree
 class AccountMove(models.Model):
 	_inherit = "account.move"
 	
-	@api.multi
+	
 	def create_move_margo(self):
 		cr = self.env.cr
 		move_obj = self.env['account.move']
@@ -54,7 +54,7 @@ class AccountMove(models.Model):
 		#print(e)
 		#pass
 		
-	@api.multi
+	
 	def get_analytic_account(self, account_number, branch_code, analytic_account):
 		account_obj = self.env['account.account']
 		analytic_account_obj = self.env['account.analytic.tag']
@@ -66,7 +66,7 @@ class AccountMove(models.Model):
 			account_id = account_obj.search([('code', '=', account_number), ('company_id', '=', company_id)], limit=1)
 		return account_id.id
 	
-	@api.multi
+	
 	def get_branch(self, branch_code):
 		branch_obj = self.env['res.branch']
 		#res = False
@@ -75,7 +75,7 @@ class AccountMove(models.Model):
 			branch_id = branch_obj.search([('branch_code', '=', branch_code)], limit=1)
 		return branch_id.id
 	
-	@api.multi
+	
 	def get_account(self, account_number, branch_code):
 		account_obj = self.env['account.account']
 		account_id = False
@@ -86,7 +86,7 @@ class AccountMove(models.Model):
 			account_id = account_obj.search([('code', '=', account_number), ('company_id', '=', company_id)], limit=1)
 		return account_id.id
 
-	@api.multi
+	
 	def get_company(self, branch_code):
 		branch_obj = self.env['res.branch']
 		#res = False
@@ -95,7 +95,7 @@ class AccountMove(models.Model):
 			branch_id = branch_obj.search([('branch_code', '=', branch_code)], limit=1)
 		return branch_id.company_id.id
 	
-	@api.multi
+	
 	def get_journal(self, day_book):
 		journal_obj = self.env['account.journal']
 		journal_id = False

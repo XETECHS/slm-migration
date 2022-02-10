@@ -4,28 +4,34 @@ from odoo import models, api, fields, _
 from odoo.tools.misc import format_date
 
 
+class AccountReport(models.AbstractModel):
+    _inherit = 'account.report'
+
+    filter_accounts = None
+
+
 class ReportAccountAgedPartner(models.AbstractModel):
     _inherit = "account.aged.partner"
 
-    filter_accounts = True
-
     def _set_context(self, options):
         ctx = super(ReportAccountAgedPartner, self)._set_context(options)
-
         accounts = []
         if options.get('accounts'):
-            accounts = [c.get('id') for c in options['accounts'] if c.get('selected')]
-            accounts = accounts if len(accounts) > 0 else [c.get('id') for c in options['accounts']]
+            accounts = [c.get('id')
+                        for c in options['accounts'] if c.get('selected')]
+            accounts = accounts if len(accounts) > 0 else [
+                c.get('id') for c in options['accounts']]
         ctx['accounts'] = len(accounts) > 0 and accounts
         return ctx
 
-    def _build_options(self, previous_options=None):
+    def _get_options(self, previous_options=None):
         if not previous_options:
             previous_options = {}
-        options = super(ReportAccountAgedPartner, self)._build_options(previous_options)
+        options = super(ReportAccountAgedPartner,
+                        self)._get_options(previous_options)
         companies = options.get('multi_company')
-        if options.get('accounts'):
-            options['accounts'] = self._get_options_accounts(companies=companies)
+        options['accounts'] = self._get_options_accounts(
+                companies=companies)
         # Merge old options with default from this report
         for key, value in options.items():
             if key in previous_options and value is not None and previous_options[key] is not None:

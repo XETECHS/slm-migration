@@ -12,7 +12,7 @@ class AccountChangeLockDate(models.TransientModel):
                                        default=lambda self: [{'date_from': period.date_from, 'date_to': period.date_to}
                                                              for period in self.env.user.company_id.unlocked_periods], )
 
-    @api.multi
+    
     def change_lock_date(self):
         self.env.user.company_id.unlocked_periods = False
         self.env.user.company_id.write(

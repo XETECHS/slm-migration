@@ -23,7 +23,5 @@ from . import account_move
 from . import airfare_detail
 from . import destination_city
 from . import flight_list
-from . import profit_center
 from . import mandatory_analytic_account
-from . import account_invoice_line
 from . import account_payment

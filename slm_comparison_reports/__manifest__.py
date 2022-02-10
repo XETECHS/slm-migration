@@ -20,28 +20,28 @@
 ##############################################################################
 
 {
-	'name': 'Comparison reports SLM',
-	'summary': """
-	    Budget and balance comparison reports
-	""",
-	'version': '1.0.',
-	'description': """
-        Comparison reports for SLM
-	    * Encryption Report
-	    * Profit Center Report
-	    * Business Unit Report
-	    * SLM Group Total Report
+    'name': 'Comparison reports SLM',
+    'summary': """
+        Budget and balance comparison reports
     """,
-	'author': 'Fernando Flores --> fflores@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'account_reports', 'slm_encryption_reports'],
-	'license': 'AGPL-3',
+    'version': '1.0.',
+    'description': """
+        Comparison reports for SLM
+        * Encryption Report
+        * Profit Center Report
+        * Business Unit Report
+        * SLM Group Total Report
+    """,
+    'author': 'Fernando Flores --> fflores@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'account_reports', 'slm_encryption_reports'],
+    'license': 'AGPL-3',
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
-		'views/comparison_report_data.xml',
-	],
+            'views/comparison_report_data.xml',
+    ],
 }

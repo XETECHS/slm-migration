@@ -3,7 +3,9 @@
 
 from odoo import api, fields, models, _
 
+
 class pos_config(models.Model):
     _inherit = 'pos.config'
 
-    pos_branch_ids = fields.Many2many('res.branch', id1='user_id', id2='branch_id',string='Branch')   
+    pos_branch_ids = fields.Many2many(
+        'res.branch', id1='user_id', id2='branch_id', string='Branch')

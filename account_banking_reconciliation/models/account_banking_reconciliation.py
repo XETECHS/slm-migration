@@ -17,7 +17,6 @@ class BankAccRecStatement(models.Model):
     _description = "Bank Acc Rec Statement"
     _order = "ending_date desc"
 
-    @api.multi
     def check_group(self):
         """Check if following security constraints are implemented for groups:
         Bank Statement Preparer– they can create, view and delete any of the
@@ -46,19 +45,19 @@ class BankAccRecStatement(models.Model):
                                       "state!" % (group_verifier.name)))
         return True
 
-    @api.multi
+    
     def write(self, vals):
         # Check if the user is allowed to perform the action
         self.check_group()
         return super(BankAccRecStatement, self).write(vals)
 
-    @api.multi
+    
     def unlink(self):
         """Check if the user is allowed to perform the action"""
         self.check_group()
         return super(BankAccRecStatement, self).unlink()
 
-    @api.multi
+    
     def check_difference_balance(self):
         # Check if difference balance is zero or not.
         for statement in self:
@@ -79,13 +78,13 @@ class BankAccRecStatement(models.Model):
                                       "and make necessary changes."))
         return True
 
-    @api.multi
+    
     def action_cancel(self):
         """Cancel the the statement."""
         self.write({'state': 'cancel'})
         return True
 
-    @api.multi
+    
     def action_review(self):
         """Change the status of statement from 'draft' to 'to_be_reviewed'."""
         # If difference balance not zero prevent further processing
@@ -93,7 +92,7 @@ class BankAccRecStatement(models.Model):
         self.write({'state': 'to_be_reviewed'})
         return True
 
-    @api.multi
+    
     def action_process(self):
         """Set the account move lines as 'Cleared' and
         Assign 'Bank Acc Rec Statement ID'
@@ -120,7 +119,7 @@ class BankAccRecStatement(models.Model):
                              'verified_date': time.strftime('%Y-%m-%d')})
         return True
 
-    @api.multi
+    
     def action_cancel_draft(self):
         """Reset the statement to draft and perform resetting operations."""
         for statement in self:
@@ -145,7 +144,7 @@ class BankAccRecStatement(models.Model):
                              'verified_date': False})
         return True
 
-    @api.multi
+    
     def action_select_all(self):
         """Mark all the statement lines as 'Cleared'."""
         for statement in self:
@@ -154,7 +153,7 @@ class BankAccRecStatement(models.Model):
             statement_lines.write({'cleared_bank_account': True})
         return True
 
-    @api.multi
+    
     def action_unselect_all(self):
         """Reset 'Cleared' in all the statement lines."""
         for statement in self:
@@ -235,7 +234,7 @@ class BankAccRecStatement(models.Model):
                 account_precision)
 
     # refresh data
-    @api.multi
+    
     def refresh_record(self):
         retval = True
         refdict = {}
@@ -281,7 +280,7 @@ class BankAccRecStatement(models.Model):
         return retval
 
     # get starting balance for the account
-    @api.multi
+    
     def get_starting_balance(self, account_id, ending_date):
         result = (False, 0.0)
         reslist = []
@@ -539,7 +538,7 @@ class BankAccRecStatement(models.Model):
          'company and G/L account!')
     ]
 
-    @api.multi
+    
     def copy(self, default=None):
         for rec in self:
             if default is None:
@@ -599,7 +598,7 @@ class BankAccRecStatementLine(models.Model):
             {'draft_assigned_to_statement': True})
         return super(BankAccRecStatementLine, self).create(vals)
 
-    @api.multi
+    
     def unlink(self):
         account_move_line_obj = self.env['account.move.line']
         move_line_ids = [x.move_line_id.id for x in self if x.move_line_id]

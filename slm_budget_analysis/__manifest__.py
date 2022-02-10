@@ -20,23 +20,23 @@
 ##############################################################################
 
 {
-	'name': 'Budget Analysis report',
-	'summary': """
-	    Budgetanalysis reports
-	""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Budget Analysis report',
+    'summary': """
+        Budgetanalysis reports
     """,
-	'author': 'Fernando Flores --> fflores@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'account_reports', 'slm_encryption_reports'],
-	'license': 'AGPL-3',
+    'version': '1.0.',
+    'description': """
+    """,
+    'author': 'Fernando Flores --> fflores@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'account_reports', 'slm_encryption_reports'],
+    'license': 'AGPL-3',
 
     # always loaded
     'data': [
-        'security/ir.model.access.csv',
-		'views/budget_analysis_report_data.xml',
-	],
+        # 'security/ir.model.access.csv',
+        'views/budget_analysis_report_data.xml',
+    ],
 }

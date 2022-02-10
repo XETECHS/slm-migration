@@ -140,7 +140,6 @@
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">slm.import.file</field>
             <field name="view_mode">tree,form</field>
-            <field name="view_type">form</field>
             <field name="view_id" ref="view_import_file_tree"/>
         </record>
         <menuitem id="menu_import_file"

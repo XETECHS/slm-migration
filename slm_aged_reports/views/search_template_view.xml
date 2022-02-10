@@ -26,8 +26,8 @@
         </template>
 
         <template id="aged_reports_search_template" inherit_id="account_reports.search_template">
-            <xpath expr="//div[@class='btn-group o_dropdown o_account_reports_filter_analytic']" position="after">
-                <div class="btn-group o_dropdown o_account_reports_filter_analytic"
+            <xpath expr="//div[@class='btn-group dropdown o_account_reports_filter_analytic']" position="after">
+                <div class="btn-group dropdown o_account_reports_filter_analytic"
                      t-if="options.get('accounts')">
                     <t t-call="slm_aged_reports.search_template_accounts"/>
                 </div>

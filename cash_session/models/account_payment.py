@@ -16,7 +16,8 @@ class AccountPayment(models.Model):
         'cash.session', string='Session', required=False, index=True,
         domain="[('state', '=', 'opened')]", states={'draft': [('readonly', False)]},
         readonly=True, default=_default_session)
-    picking_id = fields.Many2one('stock.picking', string='Picking', readonly=True, copy=False)
+    picking_id = fields.Many2one(
+        'stock.picking', string='Picking', readonly=True, copy=False)
     statement_ids = fields.One2many('account.bank.statement.line', 'cash_statement_id', string='Payments', states={
                                     'draft': [('readonly', False)]}, readonly=True)
     invoice_number = fields.Char(string='Invoice Number', readonly=True,
@@ -27,7 +28,6 @@ class AccountPayment(models.Model):
         readonly=True,
         string='Available Payment Methods')
 
-    @api.multi
     def _write(self, values):
         if 'invoice_number' in values:
             inv = values["invoice_number"]
@@ -66,11 +66,15 @@ class AccountPayment(models.Model):
         journal = self.env['account.journal'].browse(journal_id)
         # use the company of the journal and not of the current user
         if data['amount'] < 0.00:
-            company_cxt = dict(self.env.context, force_company=journal.company_id.id)
-            account_def = self.env['ir.property'].with_context(company_cxt).get('property_account_payable_id', 'res.partner')
-            args['account_id'] = (self.partner_id.property_account_payable_id.id) or (account_def and account_def.id) or False
+            company_cxt = dict(
+                self.env.context, force_company=journal.company_id.id)
+            account_def = self.env['ir.property'].with_context(
+                company_cxt).get('property_account_payable_id', 'res.partner')
+            args['account_id'] = (self.partner_id.property_account_payable_id.id) or (
+                account_def and account_def.id) or False
         else:
-            company_cxt = dict(self.env.context, force_company=journal.company_id.id)
+            company_cxt = dict(
+                self.env.context, force_company=journal.company_id.id)
             account_def = self.env['ir.property'].with_context(company_cxt).get(
                 'property_account_receivable_id', 'res.partner')
             args['account_id'] = (self.partner_id.property_account_receivable_id.id) or (
@@ -111,13 +115,15 @@ class AccountPayment(models.Model):
         args = self._prepare_bank_statement_line_payment_values(data)
         context = dict(self.env.context)
         context.pop('pos_session_id', False)
-        self.env['account.bank.statement.line'].with_context(context).create(args)
-        self.amount_paid = sum(payment.amount for payment in self.statement_ids)
+        self.env['account.bank.statement.line'].with_context(
+            context).create(args)
+        self.amount_paid = sum(
+            payment.amount for payment in self.statement_ids)
         return args.get('statement_id', False)
 
-    @api.multi
     def post(self):
-        config = self.env['cash.config'].search([('user_id', '=', self.env.uid)], limit=1).id
+        config = self.env['cash.config'].search(
+            [('user_id', '=', self.env.uid)], limit=1).id
         for rec in self:
 
             if rec.state != 'draft':
@@ -151,7 +157,8 @@ class AccountPayment(models.Model):
 
             if not config:
                 # Create the journal entry
-                amount = rec.amount * (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
+                amount = rec.amount * \
+                    (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
                 move = rec._create_payment_entry(amount)
 
                 # In case of a transfer, the first journal entry created debited the source liquidity account and credited
@@ -168,7 +175,7 @@ class AccountPayment(models.Model):
                 move = False
                 # Create the journal entry with session
                 #rec.write({'state': 'posted'})
-                #if config:
+                # if config:
                 monto = self.amount or 0.0
                 if self.payment_type == 'outbound':
                     monto = monto * -1
@@ -180,11 +187,12 @@ class AccountPayment(models.Model):
                         'payment_name': self.payment_reference,
                         'journal':      self.journal_id.id,
                         'is_internal': True,
-                        #'amount_currency': monto,
-                        #'currency_id': self.currency_id.id,
+                        # 'amount_currency': monto,
+                        # 'currency_id': self.currency_id.id,
                     }
                     self.add_payment(data)
-                    amount = rec.amount * (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
+                    amount = rec.amount * \
+                        (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
                     move = rec._create_payment_entry(amount)
                     rec.write({'state': 'posted'})
                 elif self.payment_type == 'inbound':
@@ -196,12 +204,13 @@ class AccountPayment(models.Model):
                         'payment_name': self.payment_reference,
                         'journal':      self.journal_id.id,
                         'is_internal': True,
-                        #'amount_currency': monto,
-                        #'currency_id': self.currency_id.id,
+                        # 'amount_currency': monto,
+                        # 'currency_id': self.currency_id.id,
                     }
                     self.add_payment(data)
                     #rec.write({'state': 'posted'})
-                    amount = rec.amount * (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
+                    amount = rec.amount * \
+                        (rec.payment_type in ('outbound', 'transfer') and 1 or -1)
                     move = rec._create_payment_entry(amount)
                     rec.write({'state': 'posted'})
                 elif self.payment_type == 'transfer':
@@ -210,7 +219,7 @@ class AccountPayment(models.Model):
                     transfer_credit_aml = move.line_ids.filtered(
                         lambda r: r.account_id == rec.company_id.transfer_account_id)
                     transfer_debit_aml = rec._create_transfer_entry(monto)
-                    (transfer_credit_aml + transfer_debit_aml).reconcile() 
+                    (transfer_credit_aml + transfer_debit_aml).reconcile()
                     data = {
                         'amount':       monto * -1,
                         'payment_date': self.payment_date,
@@ -218,8 +227,8 @@ class AccountPayment(models.Model):
                         'payment_name': self.payment_reference,
                         'journal':      self.journal_id.id,
                         'is_internal': True,
-                        #'amount_currency': monto * -1,
-                        #'currency_id': self.currency_id.id,
+                        # 'amount_currency': monto * -1,
+                        # 'currency_id': self.currency_id.id,
                     }
                     self.add_payment(data)
                     data = {
@@ -229,8 +238,8 @@ class AccountPayment(models.Model):
                         'payment_name': self.payment_reference,
                         'journal':      self.destination_journal_id.id,
                         'is_internal': True,
-                        #'amount_currency':  monto,
-                        #'currency_id': self.currency_id.id,
+                        # 'amount_currency':  monto,
+                        # 'currency_id': self.currency_id.id,
                     }
                     self.add_payment(data)
                     rec.write({'state': 'posted'})

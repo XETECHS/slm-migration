@@ -40,7 +40,7 @@ class Bom_wizard(models.TransientModel):
     imp_product_by = fields.Selection([('barcode', 'Barcode'), ('code', 'Code'), ('name', 'Name')],
                                string='Import Product By')
 
-    @api.multi
+    
     def Import_BOM(self):
         Log = self.env['log.management']
         product_teml_obj = self.env['product.template']

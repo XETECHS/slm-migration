@@ -11,9 +11,8 @@ class account_bank_statement_line(models.Model):
     @api.model
     def _get_bank_statement_default_branch(self):
         user_pool = self.env['res.users']
-        branch_id = user_pool.browse(self.env.uid).branch_id.id  or False
+        branch_id = user_pool.browse(self.env.uid).branch_id.id or False
         return branch_id
 
-
-    branch_id = fields.Many2one('res.branch', 'Branch', default=_get_bank_statement_default_branch , readonly = False)
-
+    branch_id = fields.Many2one(
+        'res.branch', 'Branch', default=_get_bank_statement_default_branch, readonly=False)

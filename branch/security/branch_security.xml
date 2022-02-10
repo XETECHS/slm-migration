@@ -73,7 +73,7 @@
         
     <record id="account_invoice_branch_manager_rule" model="ir.rule">
         <field name="name">Account Branch Manager</field>
-        <field name="model_id" ref="model_account_invoice"/>
+        <field name="model_id" ref="account.model_account_move"/>
         <field name="global" eval="True"/>
         <field name="domain_force">['|',('branch_id','=',False),('branch_id','in',[branch.id for branch in user.branch_ids])]</field>
         <field name="groups" eval="[(4, ref('branch.group_branch_user_manager'))]"/>
@@ -100,7 +100,7 @@
 
     <record id="account_invoice_branch_rule" model="ir.rule">
         <field name="name">Account Branch</field>
-        <field name="model_id" ref="model_account_invoice"/>
+        <field name="model_id" ref="account.model_account_move"/>
         <field name="global" eval="True"/>
         <field name="domain_force">['|',('branch_id','=',False),('branch_id','=',user.branch_id.id)]</field>
         <field name="groups" eval="[(4, ref('branch.group_branch_user'))]"/>

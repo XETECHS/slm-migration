@@ -10,7 +10,7 @@ class StockScrap(models.Model):
         string='Analytic Account',
         comodel_name='account.analytic.account')
 
-    @api.multi
+    
     def _prepare_move_values(self):
         res = super()._prepare_move_values()
         res.update({

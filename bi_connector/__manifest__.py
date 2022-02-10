@@ -35,5 +35,7 @@
     'depends': ['base'],
     'data': [
         'views/bi_connector_settings.xml'
-    ]
+
+    ],
+    'license': 'AGPL-3',
 }

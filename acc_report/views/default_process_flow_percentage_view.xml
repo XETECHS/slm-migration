@@ -46,7 +46,7 @@
         <field name="res_model">default.cost.center.percentage</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_default_cost_center_percentage_tree"/>
-        <field name="view_type">form</field>
+        
     </record>
     <menuitem 
             name="Cost Center Percentage"

@@ -18,21 +18,20 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from odoo import api, exceptions, fields, models, _
+from odoo import api, fields, models
 
 
-class AccountInvoice(models.Model):
-    _inherit = "account.invoice"
+class Accountmove(models.Model):
+    _inherit = "account.move"
 
     # # Aca metemos el nuevo diccionario que contiene las columnas agregadas en la factura y que ya existen
     # #   En el Asiento Contable por el modulo slm_custom_fields
     @api.model
     def invoice_line_move_line_get(self):
-        res = super(AccountInvoice, self).invoice_line_move_line_get()
+        res = super(Accountmove, self).invoice_line_move_line_get()
         for inv_line in self.invoice_line_ids:
             for line in res:
                 if inv_line.id == line['invl_id']:
-                    # raise UserError(_("%s") %(inv_line))
                     line.update({
                         'opercde': str(inv_line.opercde),
                         'vlnr': inv_line.vlnr and inv_line.vlnr.id or False,
@@ -49,12 +48,10 @@ class AccountInvoice(models.Model):
                         'vltype': str(inv_line.vltype),
                         'vltreg': str(inv_line.vltreg),
                     })
-                    # raise UserError(_("%s") %(line))
         return res
 
-    @api.multi
     def action_move_create(self):
-        res = super(AccountInvoice, self).action_move_create()
+        res = super(Accountmove, self).action_move_create()
         for inv_line in self.invoice_line_ids:
             for line in self.move_id.line_ids:
                 if (bool(inv_line.product_id) and (inv_line.product_id.id == line.product_id.id)) or \
@@ -80,11 +77,11 @@ class AccountInvoice(models.Model):
         return res
 
 
-AccountInvoice()
+Accountmove()
 
 
-class AccountInvoiceLine(models.Model):
-    _inherit = "account.invoice.line"
+class AccountmoveLine(models.Model):
+    _inherit = "account.move.line"
 
     opercde = fields.Char('OPERCDE')
     vlnr = fields.Many2one('flight.list', 'VLNR')
@@ -102,4 +99,4 @@ class AccountInvoiceLine(models.Model):
     vltreg = fields.Char('VLTREG')
 
 
-AccountInvoiceLine()
+AccountmoveLine()

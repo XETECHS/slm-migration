@@ -96,20 +96,20 @@
         </template>
 
         <template id="encryption_search_template" inherit_id="account_reports.search_template">
-            <xpath expr="//div[@class='btn-group o_dropdown o_account_reports_filter_analytic']" position="after">
-                <div class="btn-group o_dropdown o_account_reports_filter_encryption"
+            <xpath expr="//div[@class='btn-group dropdown o_account_reports_filter_analytic']" position="after">
+                <div class="btn-group dropdown o_account_reports_filter_encryption"
                      t-if="options.get('encryption') != None">
                     <t t-call="slm_encryption_reports.search_template_encryptions"/>
                 </div>
-                <div class="btn-group o_dropdown o_account_reports_filter_profit_center"
+                <div class="btn-group dropdown o_account_reports_filter_profit_center"
                      t-if="options.get('profit_center') != None">
                     <t t-call="slm_encryption_reports.search_template_profit_center"/>
                 </div>
-                 <div class="btn-group o_dropdown o_account_reports_filter_profit_center_accounts"
+                 <div class="btn-group dropdown o_account_reports_filter_profit_center_accounts"
                      t-if="options.get('profit_center_accounts') != None">
                     <t t-call="slm_encryption_reports.search_template_profit_center_accounts"/>
                 </div>
-                <div class="btn-group o_dropdown o_account_reports_filter_business_unit"
+                <div class="btn-group dropdown o_account_reports_filter_business_unit"
                      t-if="options.get('business_unit') != None">
                     <t t-call="slm_encryption_reports.search_template_business_unit"/>
                 </div>

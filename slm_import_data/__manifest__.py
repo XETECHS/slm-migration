@@ -20,31 +20,31 @@
 ##############################################################################
 
 {
-	'name': 'Import Data App EDGAR SLM',
-	'summary': """Import data app EDGAR SLM""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Import Data App EDGAR SLM',
+    'summary': """Import data app EDGAR SLM""",
+    'version': '1.0.',
+    'description': """
 Import Data
 
-	* Import data from EDGAR database
-	* Import data from MARGO database
-	* Others
+    * Import data from EDGAR database
+    * Import data from MARGO database
+    * Others
 """,
-	'author': 'Luis Aquino --> laquino@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'slm_dbtable_adapt'],
-	'license': 'AGPL-3',
-	'data': [
-		'wizard/wizard_import_data_view.xml',
-		'views/cron_views.xml',
-		#'views/reports.xml',
-		#'views/report_journal_book_template.xml',
-		#'views/report_general_ledger_template.xml',
-	],
-	'demo': [],
-	'sequence': 2,
-	'installable': True,
-	'auto_install': False,
+    'author': 'Luis Aquino --> laquino@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'slm_dbtable_adapt'],
+    'license': 'AGPL-3',
+    'data': [
+            'wizard/wizard_import_data_view.xml',
+            'views/cron_views.xml',
+            # 'views/reports.xml',
+            # 'views/report_journal_book_template.xml',
+            # 'views/report_general_ledger_template.xml',
+    ],
+    'demo': [],
+    'sequence': 2,
+    'installable': True,
+    'auto_install': False,
 }

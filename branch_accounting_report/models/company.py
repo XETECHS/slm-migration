@@ -1,12 +1,12 @@
-from odoo import models, fields, api, _
+from odoo import models
 from datetime import datetime, timedelta
 from odoo.tools.misc import DEFAULT_SERVER_DATE_FORMAT
 from odoo.tools import date_utils
 
+
 class ResCompany(models.Model):
     _inherit = "res.company"
 
-    @api.multi
     def compute_fiscalyear_dates(self, current_date):
         '''Computes the start and end dates of the fiscal year where the given 'date' belongs to.
 
@@ -20,7 +20,7 @@ class ResCompany(models.Model):
         try:
             date_str = current_date.strftime(DEFAULT_SERVER_DATE_FORMAT)
         except AttributeError:
-            current_date =  datetime.now().date()
+            current_date = datetime.now().date()
             date_str = current_date.strftime(DEFAULT_SERVER_DATE_FORMAT)
 
         # Search a fiscal year record containing the date.
@@ -38,7 +38,7 @@ class ResCompany(models.Model):
             }
 
         date_from, date_to = date_utils.get_fiscal_year(
-            current_date, day=self.fiscalyear_last_day, month=self.fiscalyear_last_month)
+            current_date, day=int(self.fiscalyear_last_day), month=int(self.fiscalyear_last_month))
 
         date_from_str = date_from.strftime(DEFAULT_SERVER_DATE_FORMAT)
         date_to_str = date_to.strftime(DEFAULT_SERVER_DATE_FORMAT)

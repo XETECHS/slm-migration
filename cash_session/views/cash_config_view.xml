@@ -40,7 +40,6 @@
         <record id="action_cash_config" model="ir.actions.act_window">
             <field name="name">Cash Configuration</field>
             <field name="res_model">cash.config</field>
-            <field name='view_type'>form</field>
             <field name='view_mode'>tree,form</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">

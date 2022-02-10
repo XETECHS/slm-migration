@@ -22,7 +22,7 @@ class DefaultCostCenterPercentage(models.Model):
        ('currnt_year_uniq', 'unique (currnt_year)', "Year is already exists"),
     ]
 
-    @api.multi
+    
     def action_done(self):
         for line in self.line_ids:
             data = {
@@ -35,13 +35,13 @@ class DefaultCostCenterPercentage(models.Model):
             line.analytic_id.write(data)
         return self.write({'state': 'done'})
 
-    @api.multi
+    
     def get_currnt_year(self):
         for res in self:
             currentYear = datetime.now().year
             res.currnt_year = _(currentYear) + ' - ' + _(currentYear+1)
 
-    @api.multi
+    
     def action_get_data(self):
         line_obj = self.env['default.cost.center.percentage.line']
         analytic_obj = self.env['account.analytic.account']
@@ -79,7 +79,7 @@ class DefaultCostCenterPercentageLine(models.Model):
     cost_group_id = fields.Many2one('cost.group', string="Cost Group")
     process_flow_id = fields.Many2one('process.flow', string="Process Flow")
 
-    @api.multi
+    
     def write(self, vals):
         res = super(DefaultCostCenterPercentageLine, self).write(vals)
         total = self.ma + self.ragio + self.cargo

@@ -3,8 +3,10 @@
 
 from odoo import api, fields, models, _
 from odoo.tools import float_is_zero
+from odoo.exceptions import UserError
 
-class pos_order(models.Model):
+
+class PosOrder(models.Model):
     _inherit = 'pos.order'
 
     def _create_account_move_line(self, session=None, move=None):
@@ -15,12 +17,12 @@ class pos_order(models.Model):
             for tax in taxes.filtered(lambda t: t.amount_type == 'group'):
                 if tax.id not in group_done:
                     group_done.add(tax.id)
-                    children |= _flatten_tax_and_children(tax.children_tax_ids, group_done)
+                    children |= _flatten_tax_and_children(
+                        tax.children_tax_ids, group_done)
             return taxes + children
 
         # Tricky, via the workflow, we only have one id in the ids variable
         """Create a account move line of order grouped by products or not."""
-        IrProperty = self.env['ir.property']
         ResPartner = self.env['res.partner']
 
         if session and not all(session.id == order.session_id.id for order in self):
@@ -38,15 +40,18 @@ class pos_order(models.Model):
                     line = grouped_data[product_key][0]
                     product = Product.browse(line['product_id'])
                     # In the SO part, the entries will be inverted by function compute_invoice_totals
-                    price_unit = self._get_pos_anglo_saxon_price_unit(product, line['partner_id'], line['quantity'])
-                    account_analytic = Analytic.browse(line.get('analytic_account_id'))
+                    price_unit = self._get_pos_anglo_saxon_price_unit(
+                        product, line['partner_id'], line['quantity'])
+                    account_analytic = Analytic.browse(
+                        line.get('analytic_account_id'))
                     res = Product._anglo_saxon_sale_move_lines(
                         line['name'], product, product.uom_id, line['quantity'], price_unit,
-                            fiscal_position=order.fiscal_position_id,
-                            account_analytic=account_analytic)
+                        fiscal_position=order.fiscal_position_id,
+                        account_analytic=account_analytic)
                     if res:
                         line1, line2 = res
-                        line1 = Product._convert_prepared_anglosaxon_line(line1, order.partner_id)
+                        line1 = Product._convert_prepared_anglosaxon_line(
+                            line1, order.partner_id)
                         insert_data('counter_part', {
                             'name': line1['name'],
                             'account_id': line1['account_id'],
@@ -56,7 +61,8 @@ class pos_order(models.Model):
 
                         })
 
-                        line2 = Product._convert_prepared_anglosaxon_line(line2, order.partner_id)
+                        line2 = Product._convert_prepared_anglosaxon_line(
+                            line2, order.partner_id)
                         insert_data('counter_part', {
                             'name': line2['name'],
                             'account_id': line2['account_id'],
@@ -70,7 +76,8 @@ class pos_order(models.Model):
             account_def = IrProperty.get(
                 'property_account_receivable_id', 'res.partner')
             order_account = order.partner_id.property_account_receivable_id.id or account_def and account_def.id
-            partner_id = ResPartner._find_accounting_partner(order.partner_id).id or False
+            partner_id = ResPartner._find_accounting_partner(
+                order.partner_id).id or False
             if move is None:
                 # Create an entry for the sale
                 journal_id = self.env['ir.config_parameter'].sudo().get_param(
@@ -85,7 +92,8 @@ class pos_order(models.Model):
                     'move_id': move.id,
                 })
 
-                key = self._get_account_move_line_group_data_type_key(data_type, values, {'rounding_method': rounding_method})
+                key = self._get_account_move_line_group_data_type_key(
+                    data_type, values, {'rounding_method': rounding_method})
                 if not key:
                     return
 
@@ -96,15 +104,20 @@ class pos_order(models.Model):
                         grouped_data[key].append(values)
                     else:
                         current_value = grouped_data[key][0]
-                        current_value['quantity'] = current_value.get('quantity', 0.0) + values.get('quantity', 0.0)
-                        current_value['credit'] = current_value.get('credit', 0.0) + values.get('credit', 0.0)
-                        current_value['debit'] = current_value.get('debit', 0.0) + values.get('debit', 0.0)
+                        current_value['quantity'] = current_value.get(
+                            'quantity', 0.0) + values.get('quantity', 0.0)
+                        current_value['credit'] = current_value.get(
+                            'credit', 0.0) + values.get('credit', 0.0)
+                        current_value['debit'] = current_value.get(
+                            'debit', 0.0) + values.get('debit', 0.0)
                         if key[0] == 'tax' and rounding_method == 'round_globally':
                             if current_value['debit'] - current_value['credit'] > 0:
-                                current_value['debit'] = current_value['debit'] - current_value['credit']
+                                current_value['debit'] = current_value['debit'] - \
+                                    current_value['credit']
                                 current_value['credit'] = 0
                             else:
-                                current_value['credit'] = current_value['credit'] - current_value['debit']
+                                current_value['credit'] = current_value['credit'] - \
+                                    current_value['debit']
                                 current_value['debit'] = 0
 
                 else:
@@ -115,7 +128,8 @@ class pos_order(models.Model):
             # are set inside the for loop)
             # TOFIX: a deep refactoring of this method (and class!) is needed
             # in order to get rid of this stupid hack
-            assert order.lines, _('The POS order must have lines when calling this method')
+            assert order.lines, _(
+                'The POS order must have lines when calling this method')
             # Create an move for each order line
             cur = order.pricelist_id.currency_id
             for line in order.lines:
@@ -139,7 +153,8 @@ class pos_order(models.Model):
                 # Create a move for the line for the order line
                 # Just like for invoices, a group of taxes must be present on this base line
                 # As well as its children
-                base_line_tax_ids = _flatten_tax_and_children(line.tax_ids_after_fiscal_position).filtered(lambda tax: tax.type_tax_use in ['sale', 'none'])
+                base_line_tax_ids = _flatten_tax_and_children(line.tax_ids_after_fiscal_position).filtered(
+                    lambda tax: tax.type_tax_use in ['sale', 'none'])
                 insert_data('product', {
                     'name': name,
                     'quantity': line.qty,
@@ -153,7 +168,8 @@ class pos_order(models.Model):
                 })
 
                 # Create the tax lines
-                taxes = line.tax_ids_after_fiscal_position.filtered(lambda t: t.company_id.id == current_company.id)
+                taxes = line.tax_ids_after_fiscal_position.filtered(
+                    lambda t: t.company_id.id == current_company.id)
                 if not taxes:
                     continue
                 price = line.price_unit * (1 - (line.discount or 0.0) / 100.0)
@@ -204,7 +220,6 @@ class pos_order(models.Model):
             move.sudo().post()
         return True
 
-
     def create_picking(self):
         """Create a picking for each order and validate it."""
         Picking = self.env['stock.picking']
@@ -230,7 +245,8 @@ class pos_order(models.Model):
                     destination_id = picking_type.default_location_dest_id.id
 
             if picking_type:
-                message = _("This transfer has been created from the point of sale session: <a href=# data-oe-model=pos.order data-oe-id=%d>%s</a>") % (order.id, order.name)
+                message = _(
+                    "This transfer has been created from the point of sale session: <a href=# data-oe-model=pos.order data-oe-id=%d>%s</a>") % (order.id, order.name)
                 picking_vals = {
                     'origin': order.name,
                     'partner_id': address.get('delivery', False),
@@ -243,11 +259,13 @@ class pos_order(models.Model):
                     'location_dest_id': destination_id,
                     'branch_id': order.branch_id.id,
                 }
-                pos_qty = any([x.qty > 0 for x in order.lines if x.product_id.type in ['product', 'consu']])
+                pos_qty = any(
+                    [x.qty > 0 for x in order.lines if x.product_id.type in ['product', 'consu']])
                 if pos_qty:
                     order_picking = Picking.create(picking_vals.copy())
                     order_picking.message_post(body=message)
-                neg_qty = any([x.qty < 0 for x in order.lines if x.product_id.type in ['product', 'consu']])
+                neg_qty = any(
+                    [x.qty < 0 for x in order.lines if x.product_id.type in ['product', 'consu']])
                 if neg_qty:
                     return_vals = picking_vals.copy()
                     return_vals.update({
@@ -283,14 +301,11 @@ class pos_order(models.Model):
             # when the pos.config has no picking_type_id set only the moves will be created
             if moves and not return_picking and not order_picking:
                 moves._action_assign()
-                moves.filtered(lambda m: m.product_id.tracking == 'none')._action_done()
+                moves.filtered(lambda m: m.product_id.tracking ==
+                               'none')._action_done()
 
         return True
 
-    
-    
-    
-    ############################# For updating branch in invoice ###################################
     def _prepare_invoice(self):
         """
         Prepare the dict of values to create the new invoice for a pos order.
@@ -310,35 +325,27 @@ class pos_order(models.Model):
             'currency_id': self.pricelist_id.currency_id.id,
             'user_id': self.env.uid,
         }
-    
-    ############################# For updating branch with account move ###################################
+
     def _create_account_move(self, dt, ref, journal_id, company_id):
 
-        pos_session_obj = self.env['pos.session'].search([('name','=', ref)])
+        pos_session_obj = self.env['pos.session'].search([('name', '=', ref)])
         pos_session_branch_id = pos_session_obj.branch_id.id
 
-        date_tz_user = fields.Datetime.context_timestamp(self, fields.Datetime.from_string(dt))
+        date_tz_user = fields.Datetime.context_timestamp(
+            self, fields.Datetime.from_string(dt))
         date_tz_user = fields.Date.to_string(date_tz_user)
         return self.env['account.move'].sudo().create({'ref': ref, 'journal_id': journal_id, 'date': date_tz_user, 'branch_id': pos_session_branch_id})
 
-    #######################################################################################################
-    
-
     @api.model
-    def create(self,vals):
+    def create(self, vals):
         res = super(pos_order, self).create(vals)
         res.branch_id = res.session_id.branch_id.id
         return res
-    
-    
-    '''@api.model
-    def create(self, val):
-        
-        session_id = val.get('session_id')
-        session_pool = self.env['pos.session']
-        branch_id = session_pool.browse(session_id).branch_id and  session_pool.browse(session_id).branch_id.id
-        val.update({'branch_id' : branch_id})  
-        res  =  super(pos_order,self).create(val)
-        return res'''
-        
+
+    branch_id = fields.Many2one('res.branch', 'Branch')
+
+
+class PosPayment(models.Model):
+    _inherit = 'pos.payment'
+
     branch_id = fields.Many2one('res.branch', 'Branch')

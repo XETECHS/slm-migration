@@ -49,12 +49,12 @@
         </template>
 
         <template id="lpl_search_template" inherit_id="account_reports.search_template">
-            <xpath expr="//div[@class='btn-group o_dropdown o_account_reports_filter_analytic']" position="after">
-                <div class="btn-group o_dropdown o_account_reports_filter_encryption"
+            <xpath expr="//div[@class='btn-group dropdown o_account_reports_filter_analytic']" position="after">
+                <div class="btn-group dropdown o_account_reports_filter_encryption"
                      t-if="options.get('tags') != None">
                     <t t-call="slm_lpl_reports.search_template_tag"/>
                 </div>
-                <div class="btn-group o_dropdown o_account_reports_filter_encryption"
+                <div class="btn-group dropdown o_account_reports_filter_encryption"
                      t-if="options.get('subgroups') != None">
                     <t t-call="slm_lpl_reports.search_template_subgroups"/>
                 </div>

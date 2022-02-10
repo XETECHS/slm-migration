@@ -19,11 +19,11 @@
 #
 ##############################################################################
 {
-    'name' : 'Odoo all import for BOM, Sales, Purchase, Invoice, Inventory, Customer/Supplier Payment, Bank Statement, Journal Entry, Picking, Product, Customer.',
-    'version' : '2.3',
-    'author' : 'Globalteckz',
-    'category' : 'Extra Tools',
-    'description' : """
+    'name': 'Odoo all import for BOM, Sales, Purchase, Invoice, Inventory, Customer/Supplier Payment, Bank Statement, Journal Entry, Picking, Product, Customer.',
+    'version': '2.3',
+    'author': 'Globalteckz',
+    'category': 'Extra Tools',
+    'description': """
 
 import all in one
 all in one import
@@ -39,7 +39,7 @@ import invoice
 import products
 import Inventory
 import Payments
-import Bank Statement 
+import Bank Statement
 import statement
 import Journal entry
 import Picking
@@ -49,7 +49,7 @@ import sales order line
 import purchase order line
 import serial number
 import lot
-import Customer 
+import Customer
 import Supplier
 excel bom
 Import excel bom
@@ -148,11 +148,11 @@ import excel sales order line
 import xls sales order line
 import csv sales order line
 excel purchase order line
-xls purchase order line 
-csv purchase order line 
+xls purchase order line
+csv purchase order line
 import excel purchase order line
-import xls purchase order line 
-import csv purchase order line 
+import xls purchase order line
+import csv purchase order line
 excel serial number
 xls serial number
 csv serial number
@@ -167,10 +167,10 @@ import xls lot
 import csv lot
 excel customer
 xls customer
-csv customer 
+csv customer
 import excel customer
 import xls customer
-import csv customer 
+import csv customer
 excel supplier
 xls supplier
 csv supplier
@@ -183,13 +183,13 @@ import po
 import account
 with different scenario as per your business requirements
 """,
-    "summary":"This Module can be used to import your BOM, Sales, Purchase, Invocing, products,inventory, payments",
+    "summary": "This Module can be used to import your BOM, Sales, Purchase, Invocing, products,inventory, payments",
     'website': 'https://www.globalteckz.com',
     "price": "59.00",
     "currency": "EUR",
     'license': 'Other proprietary',
     'images': ['static/description/Banner.jpg'],
-    'depends' : ['sale_management','sale','stock','purchase','base','mrp', 'account', 'l10n_us'],
+    'depends': ['sale_management', 'sale', 'stock', 'purchase', 'base', 'mrp', 'account', 'l10n_us'],
     'data': [
         'security/ir.model.access.csv',
         'view/invoice_wizard.xml',
@@ -205,7 +205,7 @@ with different scenario as per your business requirements
         'view/bom_wizard.xml',
         'view/log_file_view.xml',
     ],
-    'qweb' : [
+    'qweb': [
     ],
     'test': [
     ],

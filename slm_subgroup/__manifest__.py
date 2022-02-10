@@ -20,25 +20,25 @@
 ##############################################################################
 
 {
-	'name': 'Account Sub groups',
-	'summary': """Account Sub Groups""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Account Sub groups',
+    'summary': """Account Sub Groups""",
+    'version': '1.0.',
+    'description': """
 Account Sub Group
 
 """,
-	'author': 'Jonathan J. Guacarán R.--> jrivero@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['account'],
-	'license': 'AGPL-3',
-	'data': [
-		'data/account_subgroup_data.xml',
-		'security/ir.model.access.csv',
-		'views/account_subgroup_view.xml',		
-	],
-	'demo': [],
-	'installable': True,
-	'auto_install': False,
+    'author': 'Jonathan J. Guacarán R.--> jrivero@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['account'],
+    'license': 'AGPL-3',
+    'data': [
+            'data/account_subgroup_data.xml',
+            'security/ir.model.access.csv',
+            'views/account_subgroup_view.xml',
+    ],
+    'demo': [],
+    'installable': True,
+    'auto_install': False,
 }

@@ -39,7 +39,7 @@ class Journal_wizard(models.TransientModel):
     seq_opt = fields.Selection([('f_sequence', 'CSV/EXCEL Sequence'), ('s_sequence', 'System Sequence')],string='Sequence Option')
     option = fields.Selection([('create', 'Create'), ('skip', 'Skip ')], string='Operation')
     
-    @api.multi
+    
     def Import_journal(self):
         Log = self.env['log.management']
         Move = self.env['account.move']

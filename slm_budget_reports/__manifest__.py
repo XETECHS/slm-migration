@@ -20,30 +20,31 @@
 ##############################################################################
 
 {
-	'name': 'Budget reports SLM',
-	'summary': """
-	    Configuration tools for mapping and report generation
-	""",
-	'version': '1.0.',
-	'description': """
-        Budget reports for SLM
-	    * Encryption Mapping 
-	    * Encryption Report
-	    * Profit Center Report
-	    * Business Unit Report
-	    * SLM Group Total Report
+    'name': 'Budget reports SLM',
+    'summary': """
+        Configuration tools for mapping and report generation
     """,
-	'author': 'Fernando Flores --> fflores@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'account_reports', 'slm_encryption_reports'],
-	'license': 'AGPL-3',
+    'version': '1.0.',
+    'description': """
+        Budget reports for SLM
+        * Encryption Mapping
+        * Encryption Report
+        * Profit Center Report
+        * Business Unit Report
+        * SLM Group Total Report
+    """,
+    'author': 'Fernando Flores --> fflores@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'account_reports', 'slm_encryption_reports'],
+    'license': 'AGPL-3',
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
-		'views/budget_encryption_report_data.xml',
-		'views/budget_encryption_mapping_view.xml',
-	],
+            'views/budget_encryption_report_data.xml',
+            'views/budget_encryption_mapping_view.xml',
+    ],
+    'license': 'AGPL-3',
 }

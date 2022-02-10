@@ -20,22 +20,22 @@
 ##############################################################################
 
 {
-	'name': 'Aged reports SLM',
-	'summary': """
-	    Custom filters for aged reports
-	""",
-	'version': '1.0.',
-	'description': """
+    'name': 'Aged reports SLM',
+    'summary': """
         Custom filters for aged reports
-	    * Filter by receivable accounts
-	    * Filter by payable accounts
     """,
-	'author': 'Fernando Flores --> fflores@xetechs.com',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'account', 'account_reports'],
-	'license': 'AGPL-3',
+    'version': '1.0.',
+    'description': """
+        Custom filters for aged reports
+        * Filter by receivable accounts
+        * Filter by payable accounts
+    """,
+    'author': 'Fernando Flores --> fflores@xetechs.com',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
+    'category': 'account',
+    'depends': ['base', 'account', 'account_reports', 'branch_accounting_report'],
+    'license': 'AGPL-3',
     'data': [
         'views/search_template_view.xml',
     ],

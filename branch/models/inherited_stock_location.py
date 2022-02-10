@@ -1,6 +1,6 @@
 # Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models, _
+from odoo import api, models, fields, _
 from odoo.exceptions import UserError
 
 
@@ -18,6 +18,4 @@ class StockLocation(models.Model):
              ('wh_output_stock_loc_id', '=', self.id)])
         for warehouse in warehouse_id:
             if self.branch_id != warehouse.branch_id:
-                raise UserError(_('Configuration error\nYou  must select same branch on a location as asssigned on a warehouse configuration.'))
-
-
+                raise UserError(_('Configuration error\nYou  must select same branch on a location as assigned on a warehouse configuration.'))

@@ -7,7 +7,8 @@ class ReportAccountFinancialReport(models.Model):
     _inherit = "account.financial.html.report"
 
     def _get_currency_table(self):
-        used_currency = self.env.user.company_id.currency_id.with_context(company_id=self.env.user.company_id.id)
+        used_currency = self.env.user.company_id.currency_id.with_context(
+            company_id=self.env.user.company_id.id)
         currency_table = {}
         for company in self.env['res.company'].search([]):
             if company.currency_id != used_currency:
@@ -55,7 +56,8 @@ class AccountFinancialReportLine(models.Model):
 
         if self.env.context.get('cash_basis'):
             for field in ['debit', 'credit', 'balance']:
-                #replace the columns selected but not the final column name (... AS <field>)
+                # replace the columns selected but not the final column name (... AS <field>)
                 number_of_occurence = len(select.split(field)) - 1
-                select = select.replace(field, field + '_cash_basis', number_of_occurence - 1)
+                select = select.replace(
+                    field, field + '_cash_basis', number_of_occurence - 1)
         return select, extra_params

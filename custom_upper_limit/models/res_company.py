@@ -12,7 +12,7 @@ class ResCompany(models.Model):
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    @api.multi
+    
     def _check_lock_date(self):
         for move in self:
             lock_date = max(move.company_id.period_lock_date or date.min,

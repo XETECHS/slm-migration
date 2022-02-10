@@ -20,7 +20,7 @@ class BudgetEncryptionMapping(models.Model):
     def name_get(self):
         return [(record.id, "{} {}".format(record.year, dict(self.months).get(record.month))) for record in self]
 
-    @api.multi
+    
     @api.onchange('month', 'year')
     def _onchange_month(self):
         budget_mapping = self.env['budget.encryption.mapping'].search([('year', '=', self.year),
@@ -33,7 +33,7 @@ class BudgetEncryptionMapping(models.Model):
 
             return {'warning': warning}
 
-    @api.multi
+    
     def duplicate_data(self):
         sql = """
             SELECT analytical_account_id, cost_center, encryption

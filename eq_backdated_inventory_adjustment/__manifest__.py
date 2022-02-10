@@ -22,7 +22,6 @@
     'license': 'OPL-1',
     'website': "",
     'data': [
-        'views/stock_view.xml',
     ],
     'images': ['static/description/main_screenshot.png'],
     'installable': True,

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <odoo>
-    <report
-        id="action_report_pos_session_summary"
-        string="Session Summary"
-        model="cash.session"
-        report_type="qweb-pdf"
-        name="report_session_summary.report_session_summary"
-        file="report_session_summary.report_session_summary"
-    />
+    <!-- Report Layout Profit and Loss QWEB-->
+    <record id="action_report_pos_session_summary" model="ir.actions.report">
+        <field name="name">Session Summary</field>
+        <field name="model">cash.session</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">report_session_summary.report_session_summary</field>
+        <field name="report_file">report_session_summary.report_session_summary</field>
+        <field name="binding_model_id" ref="cash_session.model_cash_session"/>
+        <field name="binding_type">report</field>
+    </record>
 </odoo>

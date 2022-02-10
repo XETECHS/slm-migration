@@ -50,7 +50,6 @@
             <field name="name">Import Invoice</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">invoice.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -89,7 +88,6 @@
             <field name="name">Import Payment</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">payment.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -132,7 +130,6 @@
             <field name="name">Import Sale Order</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">sale.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -176,7 +173,6 @@
             <field name="name">Import Inventory</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">inventory.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -225,7 +221,6 @@
             <field name="name">Import Purchase Order</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">purchase.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -276,7 +271,6 @@
             <field name="name">Import Picking Order</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">picking.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -316,7 +310,6 @@
             <field name="name">Import Products </field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">product.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -361,7 +354,6 @@
             <field name="name">Import Partner</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">partner.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -419,7 +411,6 @@
             <field name="name">Import Journal</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">journal.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -475,7 +466,6 @@
             <field name="name">Import Bank Account Statement Line</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">bank.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
@@ -534,7 +524,6 @@
             <field name="name">Import BOM</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">bom.wizard</field>
-            <field name="view_type">form</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>

@@ -19,47 +19,47 @@
 #
 ##############################################################################
 
-from openerp import fields, models ,api, _
-from openerp.exceptions import ValidationError
+from odoo.exceptions import ValidationError
 from odoo import api, exceptions, fields, models, _
-#from datetime import  timedelta
 
 import base64
 import io
 import xlrd
-import base64
 from odoo.tools import pycompat
+
 
 class Followers(models.Model):
     _inherit = 'mail.followers'
-    
+
     @api.model
     def create(self, vals):
         if 'res_model' and 'res_id' and 'partner_id' in vals:
-            dups = self.env['mail.followers'].search([('res_model', '=',vals.get('res_model')),
-                    ('res_id', '=', vals.get('res_id')),
-                    ('partner_id', '=', vals.get('partner_id'))])
+            dups = self.env['mail.followers'].search([('res_model', '=', vals.get('res_model')),
+                                                      ('res_id', '=',
+                                                       vals.get('res_id')),
+                                                      ('partner_id', '=', vals.get('partner_id'))])
             if len(dups):
                 for p in dups:
                     p.unlink()
         res = super(Followers, self).create(vals)
         return res
 
+
 class Partner_wizard(models.TransientModel):
     _name = 'partner.wizard'
 
-    select_file = fields.Selection([('csv', 'CSV File'), ('xls', 'XLS File')], string='File Type')
+    select_file = fields.Selection(
+        [('csv', 'CSV File'), ('xls', 'XLS File')], string='File Type')
     data_file = fields.Binary(string="File")
 
-    @api.multi
     def Import_partner(self):
         Partner = self.env['res.partner']
         Partner_fields = Partner.fields_get()
         Partner_values = Partner.default_get(Partner_fields)
-        User=self.env['res.users']
-        Term=self.env['account.payment.term']
-        Country=self.env['res.country']
-        State=self.env['res.country.state']
+        User = self.env['res.users']
+        Term = self.env['account.payment.term']
+        Country = self.env['res.country']
+        State = self.env['res.country.state']
         if self.select_file and self.data_file:
             try:
                 if self.select_file == 'csv':
@@ -72,99 +72,108 @@ class Partner_wizard(models.TransientModel):
                     file_datas = base64.decodestring(self.data_file)
                     workbook = xlrd.open_workbook(file_contents=file_datas)
                     sheet = workbook.sheet_by_index(0)
-                    data = [[sheet.cell_value(r, c) for c in range(sheet.ncols)] for r in range(sheet.nrows)]
+                    data = [[sheet.cell_value(r, c) for c in range(
+                        sheet.ncols)] for r in range(sheet.nrows)]
                     data.pop(0)
                     file_data = data
             except:
                 raise exceptions.Warning(_('Please select proper file type.'))
         else:
-            raise exceptions.Warning(_('Please select all the required fields.'))
+            raise exceptions.Warning(
+                _('Please select all the required fields.'))
 
         for row in file_data:
             if not row[0]:
                 raise exceptions.Warning(_('Name value is required.'))
             if self.select_file == 'csv' and len(row) != 21:
-                raise ValidationError("You can let empty cell in csv file or please use xls file.")
-            salesperson_id=False
+                raise ValidationError(
+                    "You can let empty cell in csv file or please use xls file.")
+            salesperson_id = False
             if row[15]:
-                salesperson_id = User.search([('name', '=', row[15])],limit=1)
+                salesperson_id = User.search([('name', '=', row[15])], limit=1)
                 if salesperson_id:
-                    salesperson_id=salesperson_id.id
+                    salesperson_id = salesperson_id.id
                 else:
-                    salesperson_id=User.create({'name':row[15],'login':row[15].lower()}).id
-                    
-            cust_payment_term_id=False
+                    salesperson_id = User.create(
+                        {'name': row[15], 'login': row[15].lower()}).id
+
+            cust_payment_term_id = False
             if row[17]:
-                cust_payment_term_id = Term.search([('name', '=', row[17])],limit=1)
+                cust_payment_term_id = Term.search(
+                    [('name', '=', row[17])], limit=1)
                 if cust_payment_term_id:
-                    cust_payment_term_id=cust_payment_term_id.id
+                    cust_payment_term_id = cust_payment_term_id.id
                 else:
-                    cust_payment_term_id=Term.create({'name':row[17]}).id
-            
-            vendar_payment_term_id=False
+                    cust_payment_term_id = Term.create({'name': row[17]}).id
+
+            vendar_payment_term_id = False
             if row[18]:
-                vendar_payment_term_id = Term.search([('name', '=', row[18])],limit=1)
+                vendar_payment_term_id = Term.search(
+                    [('name', '=', row[18])], limit=1)
                 if vendar_payment_term_id:
-                    vendar_payment_term_id=vendar_payment_term_id.id
+                    vendar_payment_term_id = vendar_payment_term_id.id
                 else:
-                    vendar_payment_term_id=Term.create({'name':row[18]}).id
-            
-            country_id=False
+                    vendar_payment_term_id = Term.create({'name': row[18]}).id
+
+            country_id = False
             if row[8]:
-                country_id = Country.search([('name', '=ilike', row[8])],limit=1)
+                country_id = Country.search(
+                    [('name', '=ilike', row[8])], limit=1)
                 if country_id:
-                    country_id=country_id.id
+                    country_id = country_id.id
                 else:
-                    country_id=Country.create({'name':row[8]}).id
-            
-            state_id=False
+                    country_id = Country.create({'name': row[8]}).id
+
+            state_id = False
             if row[6]:
-                state_id = State.search([('name', '=ilike', row[6])],limit=1)
+                state_id = State.search([('name', '=ilike', row[6])], limit=1)
                 if state_id:
-                    state_id=state_id.id
+                    state_id = state_id.id
                 else:
-                    state_id=State.create({'name':row[6],'code':row[6][:2],'country_id':country_id}).id
-            
+                    state_id = State.create(
+                        {'name': row[6], 'code': row[6][:2], 'country_id': country_id}).id
+
             Partner_values.update({
-            'company_type':'company' if row[1]=='Company' else 'person',
-            'street':row[3],
-            'street2':row[4],
-            'city':row[5],
-            'state_id':state_id,
-            'zip':int(row[7]) if isinstance(row[7],float) else row[7],
-            'country_id':country_id,
-            'vat':row[19],
-            'function':row[20],
-            'phone':int(row[10]) if isinstance(row[10],float) else row[10],
-            'mobile':int(row[11]) if isinstance(row[11],float) else row[11],
-            'email':row[12],
-            'website':row[9],
-            'customer':True if row[13] in ('TRUE',1) else False,
-            'supplier':True if row[14] in ('TRUE',1) else False,
-            'user_id':salesperson_id,
-            'property_payment_term_id':cust_payment_term_id,
-            'property_supplier_payment_term_id':vendar_payment_term_id,
-            'ref':int(row[16]) if isinstance(row[16],float) else row[16],
+                'company_type': 'company' if row[1] == 'Company' else 'person',
+                'street': row[3],
+                'street2': row[4],
+                'city': row[5],
+                'state_id': state_id,
+                'zip': int(row[7]) if isinstance(row[7], float) else row[7],
+                'country_id': country_id,
+                'vat': row[19],
+                'function': row[20],
+                'phone': int(row[10]) if isinstance(row[10], float) else row[10],
+                'mobile': int(row[11]) if isinstance(row[11], float) else row[11],
+                'email': row[12],
+                'website': row[9],
+                'customer': True if row[13] in ('TRUE', 1) else False,
+                'supplier': True if row[14] in ('TRUE', 1) else False,
+                'user_id': salesperson_id,
+                'property_payment_term_id': cust_payment_term_id,
+                'property_supplier_payment_term_id': vendar_payment_term_id,
+                'ref': int(row[16]) if isinstance(row[16], float) else row[16],
             })
 #           Parent partner
-            parent_partner_id=False
+            parent_partner_id = False
             if row[2]:
-                parent_partner_id = Partner.search([('name', '=', row[2])],limit=1)
+                parent_partner_id = Partner.search(
+                    [('name', '=', row[2])], limit=1)
                 if parent_partner_id:
                     parent_partner_id.write(Partner_values)
-                    parent_partner_id=parent_partner_id.id
+                    parent_partner_id = parent_partner_id.id
                 else:
-                    Partner_values.update({'name':row[2]})
-                    parent_partner_id=Partner.create(Partner_values).id
+                    Partner_values.update({'name': row[2]})
+                    parent_partner_id = Partner.create(Partner_values).id
             Partner_values.update({
-                'parent_id':parent_partner_id})
+                'parent_id': parent_partner_id})
 #           Main partner
-            Partner_values.update({'name':row[0]})
-            partner_id = Partner.search([('name', '=', row[0]),('ref', '=', row[16])],limit=1)
+            Partner_values.update({'name': row[0]})
+            partner_id = Partner.search(
+                [('name', '=', row[0]), ('ref', '=', row[16])], limit=1)
             if partner_id:
-#           Write if exists    
+                #           Write if exists
                 partner_id.write(Partner_values)
             else:
-#           Create new Parter
+                #           Create new Parter
                 Partner.create(Partner_values)
-                

@@ -15,7 +15,7 @@ class AccountAnalyticAccount(models.Model):
     cost_group_id = fields.Many2one('cost.group', string="Cost Group", readonly=True, track_visibility='onchange')
     process_flow_id = fields.Many2one('process.flow', string="Process Flow", readonly=True, track_visibility='onchange')
 
-    # @api.multi
+    # 
     # def write(self, vals):
     #     res = super(AccountAnalyticAccount, self).write(vals)
     #     total = self.ma + self.ragio + self.cargo

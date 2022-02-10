@@ -174,7 +174,7 @@ class AccountReportGeneralLedger(models.TransientModel):
                 account_res.append(res)
         return account_res
 
-    @api.multi
+    
     def download__excel_file(self):
         move_state = ['draft', 'posted']
         if self.target_move == 'posted':

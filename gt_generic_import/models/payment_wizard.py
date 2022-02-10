@@ -37,7 +37,7 @@ class Payment_wizard(models.TransientModel):
     payment_type = fields.Selection([('customer_py', 'Customer Payment'), ('supp_py', 'Supplier Payment')],string='Payment')
     data_file = fields.Binary(string="File")
 
-    @api.multi
+    
     def Import_payment(self):
         
         if not self.payment_type or not self.option or not self.select_file or not self.state:

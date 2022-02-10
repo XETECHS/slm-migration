@@ -43,7 +43,6 @@
         <record id="action_account_subgroup_tree" model="ir.actions.act_window">
             <field name="name">Account Sub-Groups</field>
             <field name="res_model">account.subgroup</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_account_subgroup_search"/>
             <field name="help" type="html">

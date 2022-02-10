@@ -2,10 +2,10 @@
 # Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
 
 {
-    "name" : "Financial Reports For Branch -Enterprise Edition Odoo",
-    "version" : "12.0.0.1",
-    "category" : "Accounting",
-    "depends" : ['account', 'account_accountant', 'account_reports','branch', 'general_ledger_updation'],
+    "name": "Financial Reports For Branch -Enterprise Edition Odoo",
+    "version": "12.0.0.1",
+    "category": "Accounting",
+    "depends": ['account', 'account_accountant', 'account_reports', 'branch', 'general_ledger_updation'],
     "author": "BrowseInfo",
     'summary': 'This app helps to provide branch wise filter on all Financial statement for Enterprise edition',
     "description": """
@@ -28,7 +28,7 @@
       multiple unit operation enterprise accounting reports
 
        Multiple Unit operation management for single company, Mutiple Branch management for single company, multiple operation for single company. Financial Reports , Financial filter Reports, accounting Financial Reports, accounting filter report 
-	   branch Financial Reports , branch Financial Reports , multiple company accounting report , finacial report filter report
+       branch Financial Reports , branch Financial Reports , multiple company accounting report , finacial report filter report
     Branch for POS, Branch for Sales, Branch for Purchase, Branch for all, Branch for Accounting, Branch for invoicing, Branch for Payment order, Branch for point of sales, Branch for voucher, Branch for All Accounting reports, Branch Accounting filter.
   Unit for POS, Unit for Sales, Unit for Purchase, Unit for all, Unit for Accounting, Unit for invoicing, Unit for Payment order, Unit for point of sales, Unit for voucher, Unit for All Accounting reports, Unit Accounting filter.
   Unit Operation for POS, Unit Operation for Sales, Unit operation for Purchase, Unit operation for all, Unit operation for Accounting, Unit Operation for invoicing, Unit operation for Payment order, Unit operation for point of sales, Unit operation for voucher, Unit operation for All Accounting reports, Unit operation Accounting filter.
@@ -73,18 +73,24 @@ operating Unit for POS,operating Unit for Sales,operating Unit for Purchase,oper
 operating-Unit Operation for POS,operating-Unit Operation for Sales,operating-Unit operation for Purchase,operating-Unit operation for all, operating-Unit operation for Accounting,operating-Unit Operation for invoicing,operating-Unit operation for Payment order,operating-Unit operation for point of sales,operating-Unit operation for voucher,operating-Unit operation for All Accounting reports,operating-Unit operation Accounting filter.   
 
     """,
-    "website" : "www.browseinfo.in",
+    "website": "www.browseinfo.in",
     "price": 99,
     "currency": 'EUR',
     "data": [
-        'data/account_financial_report_data.xml',
+        # 'data/account_financial_report_data.xml',
         'views/search_template_view.xml',
 
     ],
     'qweb': [
     ],
+    'assets': {
+        'web.assets_backend': [
+            'branch_accounting_report/static/src/js/custom_account_reports.js',
+        ],
+    },
     "auto_install": False,
     "installable": True,
-    "images":['static/description/Banner.png'],
+    "images": ['static/description/Banner.png'],
+    'license': 'AGPL-3',
 }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

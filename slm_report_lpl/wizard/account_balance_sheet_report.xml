@@ -74,7 +74,6 @@
         <field name="name">Report Layout Balance sheet</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.balancesheet.report</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="account_balancesheet_report_view"/>
         <field name="target">new</field>
@@ -92,7 +91,6 @@
         <field name="name">Report Layout Balance sheet (Notes)</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">account.balancesheet.report</field>
-        <field name="view_type">form</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="account_balancesheet_report_view"/>
         <field name="context">{'report_subgroup': 1}</field>

@@ -20,29 +20,29 @@
 ##############################################################################
 
 {
-	'name': 'Account Entries Log',
-	'summary': """Account Entries Log""",
-	'version': '1.0.',
-	'description': """
-Account Entries Log
+    'name': 'Account Entries Log',
+    'summary': """Account Entries Log""",
+    'version': '1.0.',
+    'description': """
+    Account Entries Log
 
-	* Notes
-	* Emails
-    * Follower
-	* Others
+        * Notes
+        * Emails
+        * Follower
+        * Others
 """,
-	'author': 'Xetechs, S.A.',
-	'maintainer': 'XETECHS, S.A.',
-	'website': 'https://www.xetechs.com',
+    'author': 'Xetechs, S.A.',
+    'maintainer': 'XETECHS, S.A.',
+    'website': 'https://www.xetechs.com',
     'support': 'Luis Aquino --> laquino@xetechs.com',
-	'category': 'account',
-	'depends': ['base', 'maintenance', 'hr_maintenance'],
-	'license': 'AGPL-3',
-	'data': [
-		'views/account_view.xml',
-	],
-	'demo': [],
-	'sequence': 2,
-	'installable': True,
-	'auto_install': False,
+    'category': 'account',
+    'depends': ['base', 'account', 'maintenance', 'hr_maintenance'],
+    'license': 'AGPL-3',
+    'data': [
+            'views/account_view.xml',
+    ],
+    'demo': [],
+    'sequence': 2,
+    'installable': True,
+    'auto_install': False,
 }
