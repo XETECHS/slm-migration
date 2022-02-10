@@ -14,7 +14,7 @@
 	</record>
 
 
-	<record id="res_branch_slm_form" model="ir.ui.view">
+	<!--<record id="res_branch_slm_form" model="ir.ui.view">
 		<field name="name">res.branch.slm.form.inherit1</field>
 		<field name="model">res.branch</field>
 		<field name="priority">5</field>
@@ -24,7 +24,7 @@
 				<field name="branch_code"/>
 			</xpath>
 			</field>
-	</record>
+	</record>-->
 
 	<record id="res_currency_slm_form" model="ir.ui.view">
 		<field name="name">res.currency.slm.form.inherit1</field>
@@ -32,7 +32,7 @@
 		<field name="priority">5</field>
 		<field name="inherit_id" ref="base.view_currency_form"/>
 		<field name="arch" type="xml">
-			<xpath expr="//field[@name='active']" position="after">
+			<xpath expr="//field[@name='full_name']" position="after">
 				<field name="currency_code"/>
 			</xpath>
 		</field>

@@ -392,10 +392,6 @@ msgstr ""
 msgid "Point of Sale Session"
 msgstr ""
 
-#. module: cash_session
-#: model:ir.actions.act_window,name:cash_session.action_cash_box_in
-msgid "Put Money In"
-msgstr "Stop geld erin"
 
 #. module: cash_session
 #: model_terms:ir.ui.view,arch_db:cash_session.view_cash_session_form

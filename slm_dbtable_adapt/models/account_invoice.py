@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models
+from odoo import api, fields, models, tools
 
 
 class AccountInvoice(models.Model):
@@ -9,3 +9,4 @@ class AccountInvoice(models.Model):
     piece_number = fields.Integer(string="Piece Number", required=False, )
     book_year = fields.Char(string="Book Year", required=False, )
     period = fields.Char(string="Period", required=False, )
+

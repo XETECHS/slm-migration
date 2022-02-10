@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Report Cashbox Line Coins QWEB-->
-    <record id="action_report_slm_cashboxline_pdf" model="ir.actions.report">
-        <field name="name">Report Cashbox Line Coins</field>
-        <field name="model">cash.session</field>
-        <field name="report_type">qweb-pdf</field>
-        <field name="report_name">slm_report_lpl.report_slm_cashboxline_pdf</field>
-        <field name="report_file">slm_report_lpl.report_slm_cashboxline_pdf</field>
-        <field name="binding_model_id" ref="model_cash_session"/>
-        <field name="binding_type">report</field>
-    </record>
-
+          <report
+        id="action_report_slm_cashboxline_pdf"
+        model="cash.session"
+        string="Report Cashbox Line Coins"
+        report_type="qweb-pdf"
+        name="slm_cashboxline.report_slm_cashboxline_pdf"
+        file="slm_cashboxline.report_slm_cashboxline_pdf"
+    />
 
     <record id="action_report_slm_cashboxline_pdf_repot" model="report.paperformat">
 	    <field name="name">Report CashboxLine Coins</field>

@@ -14,7 +14,7 @@
 
     'category': 'Accounting & Finance',
     'version': '0.1',
-    'depends': ['base', 'account', 'branch'],
+    'depends': ['base', 'account'],
 
     'data': [
         'views/account_invoice_view.xml',
@@ -25,6 +25,5 @@
     'sequence': 1,
     'installable': True,
     'auto_install': False,
-    'license': 'AGPL-3',
 
 }

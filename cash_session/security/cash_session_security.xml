@@ -2,7 +2,7 @@
 <odoo>
     <record id="group_cash_user" model="res.groups">
         <field name="name">Accountant Basic Cash Box</field>
-        <field name="category_id" ref="base.module_category_accounting_and_finance"/>
+        <!--<field name="category_id" ref="base.module_category_accounting_and_finance"/>-->
         <field name="implied_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
     </record>
 
@@ -23,7 +23,7 @@
     <record id="rule_cash_session_manager" model="ir.rule">
         <field name="name">Cash Session Company</field>
         <field name="model_id" ref="model_cash_session" />
-        <field name="groups" eval="[(4, ref('account.group_account_manager'))]"/>
+        <field name="groups" eval="[(4, ref('account.group_account_user'))]"/>
         <field name="domain_force">['|',('config_id.company_id','child_of',[user.company_id.id]),('config_id','=',False)]</field>
     </record>
 
