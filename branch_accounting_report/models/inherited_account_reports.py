@@ -13,6 +13,7 @@ class AccountReport(models.AbstractModel):
 
     filter_branch = True
     filter_accounts = None
+    filter_date = {'date_from': '', 'date_to': '', 'mode': '', 'filter': 'this_month'}
 
     def _get_options(self, previous_options=None):
         if not previous_options:

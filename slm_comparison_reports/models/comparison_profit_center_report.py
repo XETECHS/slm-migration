@@ -13,7 +13,7 @@ class ComparisonProfitCenterReport(models.AbstractModel):
     _description = "Comparison Profit Center Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False
@@ -45,6 +45,7 @@ class ComparisonProfitCenterReport(models.AbstractModel):
             profit_centers = profit_centers if len(profit_centers) > 0 else [c.get('id')
                                                                              for c in options['profit_center']]
         ctx['profit_centers'] = len(profit_centers) > 0 and profit_centers
+        print ("SSSS", ctx, profit_centers)
 
         report_type = []
         if options.get('report_type'):
@@ -55,10 +56,10 @@ class ComparisonProfitCenterReport(models.AbstractModel):
 
         return ctx
 
-    def _build_options(self, previous_options=None):
+    def _get_options(self, previous_options=None):
         if not previous_options:
             previous_options = {}
-        options = super(ComparisonProfitCenterReport, self)._build_options(previous_options)
+        options = super(ComparisonProfitCenterReport, self)._get_options(previous_options)
         if options.get('profit_center'):
             reports = self.env['profit.center.report'].search([('profit_center_mapping_id', '=', 1)])
             options['profit_center'] = [{'id': c.id, 'name': c.name.name, 'selected': False} for c in reports]

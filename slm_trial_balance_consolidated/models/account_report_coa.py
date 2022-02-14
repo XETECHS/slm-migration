@@ -144,57 +144,57 @@ class report_account_coa(models.AbstractModel):
         })
         return lines
 
-    @api.model
-    def _get_lines(self, options, line_id=None):
-        context = self.env.context
-        company_id = context.get('company_id') or self.env.user.company_id
-        grouped_accounts = {}
-        initial_balances = {}
-        comparison_table = [options.get('date')]
-        comparison_table += options.get(
-            'comparison') and options['comparison'].get('periods') or []
+    # @api.model
+    # def _get_lines(self, options, line_id=None):
+    #     context = self.env.context
+    #     company_id = context.get('company_id') or self.env.user.company_id
+    #     grouped_accounts = {}
+    #     initial_balances = {}
+    #     comparison_table = [options.get('date')]
+    #     comparison_table += options.get(
+    #         'comparison') and options['comparison'].get('periods') or []
 
-        # get the balance of accounts for each period
-        period_number = 0
-        for period in reversed(comparison_table):
-            account_codes = {}
-            res = self.with_context(date_from_aml=period['date_from'], date_to=period['date_to'], date_from=period['date_from'] and company_id.compute_fiscalyear_dates(fields.Date.from_string(period['date_from']))['date_from'] or None)._group_by_account_id(
-                options, line_id)  # Aml go back to the beginning of the user chosen range but the amount on the account line should go back to either the beginning of the fy or the beginning of times depending on the account
-            if period_number == 0:
-                initial_balances = dict(
-                    [(k, res[k]['initial_bal']['balance']) for k in res])
-                initial_balances = {}
-                initial_balances_codes = {}
-                for k in res:
-                    if k.code not in initial_balances_codes:
-                        initial_balances[k] = res[k]['initial_bal']['balance']
-                        initial_balances_codes[k.code] = k
-                    else:
-                        parent_account = initial_balances_codes[k.code]
-                        initial_balances[parent_account] += res[k]['initial_bal']['balance']
-            for account in res:
-                if account not in grouped_accounts and account.code not in account_codes:
-                    grouped_accounts[account] = [
-                        {'balance': 0, 'debit': 0, 'credit': 0} for p in comparison_table]
-                if account.code not in account_codes:
-                    account_codes[account.code] = account
-                    grouped_accounts[account][period_number]['balance'] = res[account]['balance'] - \
-                        res[account]['initial_bal']['balance']
-                    grouped_accounts[account][period_number]['debit'] = res[account]['debit'] - \
-                        res[account]['initial_bal']['debit']
-                    grouped_accounts[account][period_number]['credit'] = res[account]['credit'] - \
-                        res[account]['initial_bal']['credit']
-                else:
-                    parent_account = account_codes[account.code]
-                    grouped_accounts[parent_account][period_number]['balance'] += res[account]['balance'] - \
-                        res[account]['initial_bal']['balance']
-                    grouped_accounts[parent_account][period_number]['debit'] += res[account]['debit'] - \
-                        res[account]['initial_bal']['debit']
-                    grouped_accounts[parent_account][period_number]['credit'] += res[account]['credit'] - \
-                        res[account]['initial_bal']['credit']
+    #     # get the balance of accounts for each period
+    #     period_number = 0
+    #     for period in reversed(comparison_table):
+    #         account_codes = {}
+    #         res = self.with_context(date_from_aml=period['date_from'], date_to=period['date_to'], date_from=period['date_from'] and company_id.compute_fiscalyear_dates(fields.Date.from_string(period['date_from']))['date_from'] or None)._group_by_account_id(
+    #             options, line_id)  # Aml go back to the beginning of the user chosen range but the amount on the account line should go back to either the beginning of the fy or the beginning of times depending on the account
+    #         if period_number == 0:
+    #             initial_balances = dict(
+    #                 [(k, res[k]['initial_bal']['balance']) for k in res])
+    #             initial_balances = {}
+    #             initial_balances_codes = {}
+    #             for k in res:
+    #                 if k.code not in initial_balances_codes:
+    #                     initial_balances[k] = res[k]['initial_bal']['balance']
+    #                     initial_balances_codes[k.code] = k
+    #                 else:
+    #                     parent_account = initial_balances_codes[k.code]
+    #                     initial_balances[parent_account] += res[k]['initial_bal']['balance']
+    #         for account in res:
+    #             if account not in grouped_accounts and account.code not in account_codes:
+    #                 grouped_accounts[account] = [
+    #                     {'balance': 0, 'debit': 0, 'credit': 0} for p in comparison_table]
+    #             if account.code not in account_codes:
+    #                 account_codes[account.code] = account
+    #                 grouped_accounts[account][period_number]['balance'] = res[account]['balance'] - \
+    #                     res[account]['initial_bal']['balance']
+    #                 grouped_accounts[account][period_number]['debit'] = res[account]['debit'] - \
+    #                     res[account]['initial_bal']['debit']
+    #                 grouped_accounts[account][period_number]['credit'] = res[account]['credit'] - \
+    #                     res[account]['initial_bal']['credit']
+    #             else:
+    #                 parent_account = account_codes[account.code]
+    #                 grouped_accounts[parent_account][period_number]['balance'] += res[account]['balance'] - \
+    #                     res[account]['initial_bal']['balance']
+    #                 grouped_accounts[parent_account][period_number]['debit'] += res[account]['debit'] - \
+    #                     res[account]['initial_bal']['debit']
+    #                 grouped_accounts[parent_account][period_number]['credit'] += res[account]['credit'] - \
+    #                     res[account]['initial_bal']['credit']
 
-            period_number += 1
-        # build the report
-        lines = self._post_process(
-            grouped_accounts, initial_balances, options, comparison_table)
-        return lines
+    #         period_number += 1
+    #     # build the report
+    #     lines = self._post_process(
+    #         grouped_accounts, initial_balances, options, comparison_table)
+    #     return lines

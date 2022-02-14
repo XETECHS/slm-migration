@@ -34,8 +34,8 @@ Layout Profit & Loss
     'depends': ['account', 'report_xlsx', 'slm_subgroup', 'slm_encryption_reports'],
     'license': 'AGPL-3',
     'data': [
-            'data/slm_reptemp_data.xml',
             'security/ir.model.access.csv',
+            'data/slm_reptemp_data.xml',
             'wizard/account_layout_profitloss_report.xml',
             'reports/report.xml',
             'reports/report_layoutprofitloss.xml',

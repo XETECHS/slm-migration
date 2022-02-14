@@ -16,7 +16,7 @@ class BudgetAnalysisReport(models.AbstractModel):
     _description = "Budget Analysis  Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
     filter_comparison = None
     filter_cash_basis = None
     filter_all_entries = None
@@ -25,6 +25,7 @@ class BudgetAnalysisReport(models.AbstractModel):
     filter_multi_company = None
     filter_profit_center_accounts = None
     filter_encryption = None
+    columns = 16
 
     @api.model
     def _get_report_name(self):
@@ -36,29 +37,29 @@ class BudgetAnalysisReport(models.AbstractModel):
         return templates
 
     def _get_columns_name(self, options):
-        accounts = self._get_columns()
-        if accounts:
-            columns = accounts * 3 + 10
-        else:
-            columns = self.columns
+        # accounts = self._get_columns(options)
+        # if accounts:
+        #     columns = accounts * 3 + 10
+        # else:
+        columns = self.columns
         return [{'name': ''}] * (columns + 3)
 
-    def _get_columns(self):
-        context = dict(self._context or {})
-        sql = """
-               SELECT count(*) as accounts FROM (
-                   SELECT DISTINCT analytical_account_id 
-                   FROM budget_encryption_mapping_line
-               ) AS A;
-           """
-        params = context.get('date_to'), context.get('date_to')
-        self.env.cr.execute(sql, params)
-        results = self.env.cr.dictfetchall()
+    # def _get_columns(self, options):
+    #     context = dict(self._context or {})
+    #     sql = """
+    #            SELECT count(*) as accounts FROM (
+    #                SELECT DISTINCT analytical_account_id
+    #                FROM budget_encryption_mapping_line
+    #            ) AS A;
+    #        """
+    #     params = context.get('date_to'), context.get('date_to')
+    #     self.env.cr.execute(sql, params)
+    #     results = self.env.cr.dictfetchall()
 
-        if results:
-            return results[0]['accounts']
-        else:
-            return None
+    #     if results:
+    #         return results[0]['accounts']
+    #     else:
+    #         return None
 
     def _get_profit_centers(self):
         context = dict(self._context or {})

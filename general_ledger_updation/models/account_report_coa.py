@@ -4,7 +4,8 @@ from odoo import models
 
 
 class report_account_coa(models.AbstractModel):
-    _inherit = "account.coa.report"
+    _name = "account.coa.report"
+    _inherit = "account.report"
 
     def _do_query_group_by_account(self, options, line_id):
         results = self._do_query(options, line_id, group_by_account=True, limit=False)

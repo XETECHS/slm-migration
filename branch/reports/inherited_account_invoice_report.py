@@ -12,4 +12,4 @@ class AccountInvoiceReport(models.Model):
         return super(AccountInvoiceReport, self)._sub_select() + ", ai.branch_id as branch_id"
 
     def _select(self):
-        return super(AccountInvoiceReport, self)._select() + ", sub.branch_id as branch_id"
+        return super(AccountInvoiceReport, self)._select() + ", move.branch_id as branch_id"

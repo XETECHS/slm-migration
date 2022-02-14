@@ -16,7 +16,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
     _description = "Comparison Encryption Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '',
+                   'filter': 'this_month', 'mode': ''}
     filter_comparison = None
     filter_cash_basis = None
     filter_all_entries = None
@@ -37,51 +38,33 @@ class ComparisonEncryptionReport(models.AbstractModel):
         return templates
 
     def _get_columns_name(self, options):
-        accounts = self._get_columns()
-        if accounts:
-            columns = accounts * 3 + 10
-        else:
-            columns = self.columns
+        columns = self.columns
         return [{'name': ''}] * (columns + 3)
-
-    def _get_columns(self):
-        context = dict(self._context or {})
-        sql = """
-               SELECT count(*) as accounts FROM (
-                   SELECT DISTINCT analytical_account_id 
-                   FROM budget_encryption_mapping_line
-               ) AS A;
-           """
-        params = context.get('date_to'), context.get('date_to')
-        self.env.cr.execute(sql, params)
-        results = self.env.cr.dictfetchall()
-
-        if results:
-            return results[0]['accounts']
-        else:
-            return None
 
     def _set_context(self, options):
         ctx = super(ComparisonEncryptionReport, self)._set_context(options)
         profit_centers = []
         if options.get('profit_center_accounts'):
-            profit_centers = [c.get('id') for c in options['profit_center_accounts'] if c.get('selected')]
+            profit_centers = [
+                c.get('id') for c in options['profit_center_accounts'] if c.get('selected')]
             profit_centers = profit_centers if len(profit_centers) > 0 else [c.get('id')
                                                                              for c in options['profit_center_accounts']]
         ctx['profit_centers'] = len(profit_centers) > 0 and profit_centers
 
         if options.get('encryption'):
-            encryptions = [c.get('id') for c in options['encryption'] if c.get('selected')]
+            encryptions = [c.get('id')
+                           for c in options['encryption'] if c.get('selected')]
             encryptions = encryptions if len(encryptions) > 0 else [c.get('id')
                                                                     for c in options['encryption']]
         ctx['encryptions'] = len(encryptions) > 0 and encryptions
 
         return ctx
 
-    def _build_options(self, previous_options=None):
+    def _get_options(self, previous_options=None):
         if not previous_options:
             previous_options = {}
-        options = super(ComparisonEncryptionReport, self)._build_options(previous_options)
+        options = super(ComparisonEncryptionReport,
+                        self)._get_options(previous_options)
         if options.get('profit_center_accounts'):
             profit_centers = self._get_profit_centers()
             options['profit_center_accounts'] = [{'id': id, 'name': profit_centers[id], 'selected': False}
@@ -89,7 +72,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
 
         if options.get('encryption'):
             encryptions = {'cc5_cc6': 'CC5 to CC6', 'cc6_cc7': 'CC6 to CC7'}
-            options['encryption'] = [{'id': i, 'name': v, 'selected': False} for i, v in encryptions.items()]
+            options['encryption'] = [
+                {'id': i, 'name': v, 'selected': False} for i, v in encryptions.items()]
 
         # Merge old options with default from this report
         for key, value in options.items():
@@ -102,11 +86,11 @@ class ComparisonEncryptionReport(models.AbstractModel):
     def _get_profit_centers(self):
         context = dict(self._context or {})
         sql = """
-            SELECT 
+            SELECT
                 AAA.id, AAA.name
-            FROM budget_encryption_mapping_line BEML 
-                JOIN budget_encryption_mapping BEM ON (BEML.budget_encryption_mapping_id = BEM.id) 
-                JOIN account_analytic_account AAA ON (AAA.id = BEML.cost_center) 
+            FROM budget_encryption_mapping_line BEML
+                JOIN budget_encryption_mapping BEM ON (BEML.budget_encryption_mapping_id = BEM.id)
+                JOIN account_analytic_account AAA ON (AAA.id = BEML.cost_center)
             GROUP BY AAA.id, AAA.name, AAA.code
             ORDER BY AAA.code::INTEGER;
         """
@@ -123,19 +107,20 @@ class ComparisonEncryptionReport(models.AbstractModel):
         where_date, where_date_args = self._get_dates(context)
 
         sql = """
-             SELECT 
+             SELECT
                  AAA.code,
-                 AAA.name    
-             FROM budget_encryption_mapping_line BEML 
-                 JOIN budget_encryption_mapping BEM ON (BEML.budget_encryption_mapping_id = BEM.id) 
-                 JOIN account_analytic_account AAA ON (AAA.id = BEML.analytical_account_id) 
-             WHERE ({}) 
+                 AAA.name
+             FROM budget_encryption_mapping_line BEML
+                 JOIN budget_encryption_mapping BEM ON (BEML.budget_encryption_mapping_id = BEM.id)
+                 JOIN account_analytic_account AAA ON (AAA.id = BEML.analytical_account_id)
+             WHERE ({})
                  AND BEML.cost_center IN ({})
              GROUP BY AAA.code, AAA.name
              ORDER BY AAA.code::INTEGER;
          """.format(where_date, ','.join(where_args))
 
-        params_profit_center = tuple(profit_center_id for profit_center_id in context['profit_centers'])
+        params_profit_center = tuple(
+            profit_center_id for profit_center_id in context['profit_centers'])
         params = where_date_args + params_profit_center
         self.env.cr.execute(sql, params)
         results = self.env.cr.dictfetchall()
@@ -305,13 +290,14 @@ class ComparisonEncryptionReport(models.AbstractModel):
             ORDER BY profit_center_name, tag, account::INTEGER
         """
         sql = sql_start + sql_budget_main + union + sql_budget_all + union + sql_balance_main + union + sql_balance_all \
-              + sql_end
-        params_profit_center = tuple(profit_center_id for profit_center_id in context['profit_centers'])
+            + sql_end
+        params_profit_center = tuple(
+            profit_center_id for profit_center_id in context['profit_centers'])
         params_budget = params_profit_center + (context.get('date_from'), context.get('date_to'), '(4|8|9)%') + \
-                        params_profit_center
+            params_profit_center
         params_balance = (context.get('date_to'), context.get('date_from'), 'posted', '(4|8|9)%',
                           context.get('date_to'), context.get('date_to')) + params_profit_center + ('(4|8|9)%',) + \
-                         params_profit_center
+            params_profit_center
         self.env.cr.execute(sql, params_budget + params_balance)
         results = self.env.cr.dictfetchall()
         return results
@@ -334,7 +320,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
             accounts_per_profit_center[pc_id]['name'] = pc_name
             accounts_per_profit_center[pc_id]['code'] = pc_code
             if account_code not in accounts_per_profit_center[pc_id]['accounts']:
-                accounts_per_profit_center[pc_id]['accounts'][account_code] = {}
+                accounts_per_profit_center[pc_id]['accounts'][account_code] = {
+                }
                 accounts_per_profit_center[pc_id]['accounts'][account_code]['name'] = result['account_name']
                 accounts_per_profit_center[pc_id]['accounts'][account_code]['tag'] = result['tag']
             accounts_per_profit_center[pc_id]['accounts'][account_code][analytic_code] = {
@@ -402,9 +389,10 @@ class ComparisonEncryptionReport(models.AbstractModel):
                 GROUP BY account, profit_center_name
         """.format(sql_balance, sql_budget)
         context = dict(self._context or {})
-        params_budget = pc_code, context.get('date_from'), context.get('date_to')
+        params_budget = pc_code, context.get(
+            'date_from'), context.get('date_to')
         params_balance = context.get('date_to'), context.get('date_from'), 'posted', '(4|8|9)%', \
-                         context.get('date_to'), context.get('date_to'), pc_code
+            context.get('date_to'), context.get('date_to'), pc_code
         self.env.cr.execute(sql, (params_balance + params_budget))
         results = self.env.cr.dictfetchall()
         return results
@@ -416,7 +404,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
         for result in results:
             account = result['account']
             pc_name = result['profit_center_name']
-            totals_cc6[account] = {'balance': result['balance'], 'budget': result['budget_balance']}
+            totals_cc6[account] = {
+                'balance': result['balance'], 'budget': result['budget_balance']}
         try:
             pc_name = pc_name.replace(pc_code, '').strip()
         except AttributeError:
@@ -443,7 +432,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
         accounts_grouped = self._get_grouped_profit_center(options, line_id)
         analytical_accounts = {values['code']: values['name'].replace(values['code'], '').strip() for values in
                                self._get_analytic_accounts()}
-        count_cc6, count_cc7, last_cc6, last_cc7 = self._get_count_cc(accounts_grouped)
+        count_cc6, count_cc7, last_cc6, last_cc7 = self._get_count_cc(
+            accounts_grouped)
         total_per_analytical_account_cc6_balance = collections.Counter()
         total_per_analytical_account_cc6_budget = collections.Counter()
         total_per_analytical_account_cc7_balance = collections.Counter()
@@ -461,11 +451,13 @@ class ComparisonEncryptionReport(models.AbstractModel):
                 no_columns = self.columns
 
             if accounts_grouped[pc]['code'][0] == '7':
-                cc6_code = accounts_grouped[pc]['code'][:0] + '6' + accounts_grouped[pc]['code'][1:]
+                cc6_code = accounts_grouped[pc]['code'][:0] + \
+                    '6' + accounts_grouped[pc]['code'][1:]
                 totals_cc6, cc6_name = self._get_totals_cc6(cc6_code)
                 no_columns += 2
 
-            class_name = re.sub(r'\W+', '', accounts_grouped[pc]['name'].replace(' ', '_'))
+            class_name = re.sub(
+                r'\W+', '', accounts_grouped[pc]['name'].replace(' ', '_'))
             lines.append({
                 'id': pc,
                 'name': '',
@@ -486,7 +478,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
             if accounts_grouped[pc]['code'][0] == '7':
                 columns_header2 += [
                     {'name': 'TOTAL {}'.format(cc6_code), 'style': 'background-color:#fdfd76', 'colspan': 3}]
-                columns_header2 += [{'name': 'TOTAL', 'style': 'background-color:#fdfd76', 'colspan': 3}]
+                columns_header2 += [{'name': 'TOTAL',
+                                     'style': 'background-color:#fdfd76', 'colspan': 3}]
 
             lines.append({
                 'id': 'analytical_accounts_{}'.format(pc),
@@ -501,11 +494,12 @@ class ComparisonEncryptionReport(models.AbstractModel):
             })
             columns_header3 = [{'name': ''}] + \
                               [{'name': analytical_accounts[v].strip() if len(analytical_accounts[v].strip()) <= 18
-                              else analytical_accounts[v].strip()[0:18], 'colspan': 3}
+                                else analytical_accounts[v].strip()[0:18], 'colspan': 3}
                                for v in analytical_accounts] + [
                                   {'name': '', 'style': 'background-color:#fdfd76', 'colspan': 3}]
             if accounts_grouped[pc]['code'][0] == '7':
-                columns_header3 += [{'name': cc6_name, 'style': 'background-color:#fdfd76', 'colspan': 3}]
+                columns_header3 += [{'name': cc6_name,
+                                     'style': 'background-color:#fdfd76', 'colspan': 3}]
                 columns_header3 += [{'name': '{} + {}'.format(cc6_code, accounts_grouped[pc]['code']),
                                      'style': 'background-color:#fdfd76', 'colspan': 3}]
 
@@ -526,9 +520,10 @@ class ComparisonEncryptionReport(models.AbstractModel):
                 'title_hover': '',
                 'columns': [{'name': ''}] + [{'name': 'BALANCE'}, {'name': 'BUDGET'}, {'name': '%'}] * len(
                     analytical_accounts) + [{'name': 'BALANCE', 'style': 'background: lightyellow'},
-                                            {'name': 'BUDGET', 'style': 'background: lightyellow'},
+                                            {'name': 'BUDGET',
+                                                'style': 'background: lightyellow'},
                                             {'name': '%', 'style': 'background: lightyellow'}] * (
-                               3 if accounts_grouped[pc]['code'][0] == '7' else 1),
+                    3 if accounts_grouped[pc]['code'][0] == '7' else 1),
                 'level': 2,
                 'unfoldable': False,
                 'colspan': 1,
@@ -564,20 +559,24 @@ class ComparisonEncryptionReport(models.AbstractModel):
 
                 for analytical_account in analytical_accounts:
                     if analytical_account not in account_groups_tag[values['tag']]:
-                        account_groups_tag[current_tag][analytical_account] = {'budget': 0, 'balance': 0}
+                        account_groups_tag[current_tag][analytical_account] = {
+                            'budget': 0, 'balance': 0}
                     if analytical_account not in total_per_analytical_account:
-                        total_per_analytical_account[analytical_account] = {'budget': 0, 'balance': 0}
+                        total_per_analytical_account[analytical_account] = {
+                            'budget': 0, 'balance': 0}
 
                     try:
                         if values[analytical_account]['balance'] != 0:
-                            columns.append(round(values[analytical_account]['balance'], 2))
+                            columns.append(
+                                round(values[analytical_account]['balance'], 2))
                             total_per_account['balance'] += values[analytical_account]['balance']
                             total_per_analytical_account[analytical_account]['balance'] += values[analytical_account][
                                 'balance']
                         else:
                             columns.append('')
                         if values[analytical_account]['budget'] != 0:
-                            columns.append(round(values[analytical_account]['budget'], 2))
+                            columns.append(
+                                round(values[analytical_account]['budget'], 2))
                             total_per_account['budget'] += values[analytical_account]['budget']
                             total_per_analytical_account[analytical_account]['budget'] += values[analytical_account][
                                 'budget']
@@ -643,8 +642,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
                              'style': 'background-color:#ffffa6'}]
                         column_account += [
                             {'name': round((100 * (total_cc6_account['balance'] + total_per_account['balance']) / (
-                                    total_cc6_account['budget'] + total_per_account['budget'])) if (
-                                    total_cc6_account['budget'] + total_per_account['budget']) else 0, 2),
+                                total_cc6_account['budget'] + total_per_account['budget'])) if (
+                                total_cc6_account['budget'] + total_per_account['budget']) else 0, 2),
                              'style': 'background-color:#ffffa6'}]
 
                     lines.append({
@@ -665,8 +664,10 @@ class ComparisonEncryptionReport(models.AbstractModel):
 
             totals = []
             for analytical_account in total_per_analytical_account:
-                totals.append(total_per_analytical_account[analytical_account]['balance'])
-                totals.append(total_per_analytical_account[analytical_account]['budget'])
+                totals.append(
+                    total_per_analytical_account[analytical_account]['balance'])
+                totals.append(
+                    total_per_analytical_account[analytical_account]['budget'])
                 totals.append((100 * total_per_analytical_account[analytical_account]['balance'] /
                                total_per_analytical_account[analytical_account]['budget']) if
                               total_per_analytical_account[analytical_account]['budget'] else 0)
@@ -679,23 +680,27 @@ class ComparisonEncryptionReport(models.AbstractModel):
             columns_total = [{'name': ''}] + \
                             [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
                              totals] \
-                            + [{'name': round(total_per_analytical_account_balance, 2)},
-                               {'name': round(total_per_analytical_account_budget, 2)},
-                               {'name': round((100 * total_per_analytical_account_balance /
-                                               total_per_analytical_account_budget)
-                                              if total_per_analytical_account_budget else 0, 2)}]
+                + [{'name': round(total_per_analytical_account_balance, 2)},
+                   {'name': round(
+                       total_per_analytical_account_budget, 2)},
+                   {'name': round((100 * total_per_analytical_account_balance /
+                                   total_per_analytical_account_budget)
+                                  if total_per_analytical_account_budget else 0, 2)}]
 
             if accounts_grouped[pc]['code'][0] == '7':
-                total_cc6_balance = sum([totals_cc6[account]['balance'] for account in totals_cc6])
-                total_cc6_budget = sum([totals_cc6[account]['budget'] for account in totals_cc6])
+                total_cc6_balance = sum(
+                    [totals_cc6[account]['balance'] for account in totals_cc6])
+                total_cc6_budget = sum(
+                    [totals_cc6[account]['budget'] for account in totals_cc6])
                 columns_total += [{'name': round(total_cc6_balance, 2)}, {'name': round(total_cc6_budget, 2)},
                                   {'name': round(
                                       (100 * total_cc6_balance / total_cc6_budget) if total_cc6_budget else 0, 2)}]
                 columns_total += [{'name': round(total_cc6_balance + total_per_analytical_account_balance, 2)},
-                                  {'name': round(total_cc6_budget + total_per_analytical_account_budget, 2)},
+                                  {'name': round(
+                                      total_cc6_budget + total_per_analytical_account_budget, 2)},
                                   {'name': round((100 * (total_cc6_balance + total_per_analytical_account_balance) /
                                                   (total_cc6_budget + total_per_analytical_account_budget)) if (
-                                          total_cc6_budget + total_per_analytical_account_budget) else 0, 2)}]
+                                      total_cc6_budget + total_per_analytical_account_budget) else 0, 2)}]
 
                 total_per_analytical_account_cc7_balance.update(collections.Counter(
                     {analytical_account: total_per_analytical_account[analytical_account]['balance'] for
@@ -737,49 +742,61 @@ class ComparisonEncryptionReport(models.AbstractModel):
             if count_cc6 > 1 and accounts_grouped[pc]['code'] == last_cc6:
                 totals_combined = []
                 for analytical_account in total_per_analytical_account_cc6_balance:
-                    totals_combined.append(total_per_analytical_account_cc6_balance[analytical_account])
-                    totals_combined.append(total_per_analytical_account_cc6_budget[analytical_account])
+                    totals_combined.append(
+                        total_per_analytical_account_cc6_balance[analytical_account])
+                    totals_combined.append(
+                        total_per_analytical_account_cc6_budget[analytical_account])
                     totals_combined.append((100 * total_per_analytical_account_cc6_balance[analytical_account] /
                                             total_per_analytical_account_cc6_budget[analytical_account]) if
                                            total_per_analytical_account_cc6_budget[analytical_account] else 0)
-                sum_total_balance = sum(total_per_analytical_account_cc6_balance.values())
-                sum_total_budget = sum(total_per_analytical_account_cc6_budget.values())
+                sum_total_balance = sum(
+                    total_per_analytical_account_cc6_balance.values())
+                sum_total_budget = sum(
+                    total_per_analytical_account_cc6_budget.values())
                 columns_total_cc = [{'name': ''}] + \
                                    [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
                                     totals_combined] \
-                                   + [{'name': round(sum_total_balance, 2)}] + [{'name': round(sum_total_budget, 2)}] \
-                                   + [{'name': round(
-                    (100 * sum_total_balance / sum_total_budget) if sum_total_budget else 0, 2)}]
+                    + [{'name': round(sum_total_balance, 2)}] + [{'name': round(sum_total_budget, 2)}] \
+                    + [{'name': round(
+                        (100 * sum_total_balance / sum_total_budget) if sum_total_budget else 0, 2)}]
                 cc_name = "Total CC6"
             elif count_cc7 > 1 and accounts_grouped[pc]['code'] == last_cc7:
                 totals_combined = []
                 for analytical_account in total_per_analytical_account_cc7_balance:
-                    totals_combined.append(total_per_analytical_account_cc7_balance[analytical_account])
-                    totals_combined.append(total_per_analytical_account_cc7_budget[analytical_account])
+                    totals_combined.append(
+                        total_per_analytical_account_cc7_balance[analytical_account])
+                    totals_combined.append(
+                        total_per_analytical_account_cc7_budget[analytical_account])
                     totals_combined.append((100 * total_per_analytical_account_cc7_balance[analytical_account] /
                                             total_per_analytical_account_cc7_budget[analytical_account]) if
                                            total_per_analytical_account_cc7_budget[analytical_account] else 0)
-                sum_total_balance = sum(total_per_analytical_account_cc7_balance.values())
-                sum_total_budget = sum(total_per_analytical_account_cc7_budget.values())
+                sum_total_balance = sum(
+                    total_per_analytical_account_cc7_balance.values())
+                sum_total_budget = sum(
+                    total_per_analytical_account_cc7_budget.values())
 
                 columns_total_cc = [{'name': ''}] + \
                                    [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
                                     totals_combined] \
-                                   + [{'name': round(sum_total_balance, 2)},
-                                      {'name': round(sum_total_budget, 2)},
-                                      {'name': round(
-                                          (100 * sum_total_balance / sum_total_budget) if sum_total_budget else 0, 2)},
-                                      {'name': round(total_all_cc6['balance'], 2)},
-                                      {'name': round(total_all_cc6['budget'], 2)},
-                                      {'name': round(
-                                          (100 * total_all_cc6['balance'] / total_all_cc6['budget']) if total_all_cc6[
-                                              'budget'] else 0, 2)},
-                                      {'name': round(total_all_cc6['balance'] + sum_total_balance, 2)},
-                                      {'name': round(total_all_cc6['budget'] + sum_total_budget, 2)},
-                                      {'name': round((100 * (total_all_cc6['balance'] + sum_total_balance) / (
-                                                  total_all_cc6['budget'] + sum_total_budget)) if (
-                                                  total_all_cc6['budget'] + sum_total_budget) else 0, 2)}
-                                      ]
+                    + [{'name': round(sum_total_balance, 2)},
+                       {'name': round(sum_total_budget, 2)},
+                       {'name': round(
+                           (100 * sum_total_balance / sum_total_budget) if sum_total_budget else 0, 2)},
+                       {'name': round(
+                           total_all_cc6['balance'], 2)},
+                       {'name': round(
+                           total_all_cc6['budget'], 2)},
+                       {'name': round(
+                           (100 * total_all_cc6['balance'] / total_all_cc6['budget']) if total_all_cc6[
+                               'budget'] else 0, 2)},
+                       {'name': round(
+                           total_all_cc6['balance'] + sum_total_balance, 2)},
+                       {'name': round(
+                           total_all_cc6['budget'] + sum_total_budget, 2)},
+                       {'name': round((100 * (total_all_cc6['balance'] + sum_total_balance) / (
+                           total_all_cc6['budget'] + sum_total_budget)) if (
+                           total_all_cc6['budget'] + sum_total_budget) else 0, 2)}
+                       ]
                 cc_name = "Total CC7"
 
             if columns_total_cc:
@@ -803,8 +820,10 @@ class ComparisonEncryptionReport(models.AbstractModel):
     def add_total_tag(self, account_groups_tag, current_tag, lines, profit_center, pc_code, total_cc6,
                       empty_line=True):
         total_tag = account_groups_tag[current_tag]
-        total_budget = sum([total_tag[analytical_account]['budget'] for analytical_account in total_tag])
-        total_balance = sum([total_tag[analytical_account]['balance'] for analytical_account in total_tag])
+        total_budget = sum([total_tag[analytical_account]['budget']
+                            for analytical_account in total_tag])
+        total_balance = sum([total_tag[analytical_account]['balance']
+                             for analytical_account in total_tag])
         if (total_balance != 0 or total_budget != 0) or (pc_code[0] == '7' and (total_cc6['balance'] != 0 or
                                                                                 total_cc6['budget'] != 0)):
             additional_columns = 4
@@ -840,7 +859,7 @@ class ComparisonEncryptionReport(models.AbstractModel):
                 columns += [{'name': round(total_cc6['budget'] + total_budget, 2),
                              'style': 'text-align:right;font-size:12px;background-color:#ffffa6'}]
                 columns += [{'name': round((100 * (total_cc6['balance'] + total_balance) / (total_cc6['budget'] +
-                                            total_budget)) if (total_cc6['budget'] + total_budget) else 0, 2),
+                                                                                            total_budget)) if (total_cc6['budget'] + total_budget) else 0, 2),
                              'style': 'text-align:right;font-size:12px;background-color:#ffffa6'}]
                 additional_columns = 10
             lines.append({

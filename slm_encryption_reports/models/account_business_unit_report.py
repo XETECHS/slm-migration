@@ -13,7 +13,7 @@ class AccountBusinessUnitReport(models.AbstractModel):
     _description = "Business Unit Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False
@@ -39,10 +39,10 @@ class AccountBusinessUnitReport(models.AbstractModel):
     def _get_columns_name(self, options):
         return [{'name': ''}] * self.columns
 
-    def _build_options(self, previous_options=None):
+    def _get_options(self, previous_options=None):
         if not previous_options:
             previous_options = {}
-        options = super(AccountBusinessUnitReport, self)._build_options(previous_options)
+        options = super(AccountBusinessUnitReport, self)._get_options(previous_options)
         if options.get('business_unit'):
             business_units = [{'name': 'SACS', 'id': 250}, {'name': 'SCS', 'id': 252}, {'name': 'SGS', 'id': 251}]
             options['business_unit'] = [{'id': c['id'], 'name': c['name'], 'selected': False} for c in business_units]

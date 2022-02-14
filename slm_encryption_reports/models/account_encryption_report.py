@@ -2,9 +2,8 @@
 
 import collections
 import re
-from odoo import models, fields, api, _
+from odoo import models, api, _
 from odoo.tools.safe_eval import safe_eval
-from odoo.tools.misc import formatLang
 from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
 
@@ -14,7 +13,8 @@ class AccountEncryptionReport(models.AbstractModel):
     _description = "Encryption Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '',
+                   'mode': '', 'filter': 'this_month'}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False
@@ -24,7 +24,7 @@ class AccountEncryptionReport(models.AbstractModel):
     filter_profit_center_accounts = True
     filter_encryption = True
     MAX_LINES = None
-    columns = 16
+    columns = 100
 
     @api.model
     def _get_report_name(self):
@@ -36,51 +36,54 @@ class AccountEncryptionReport(models.AbstractModel):
         return templates
 
     def _get_columns_name(self, options):
-        accounts = self._get_columns()
-        if accounts:
-            columns = accounts + 2
-        else:
-            columns = self.columns
+        # accounts = self._get_columns(options)
+        # if accounts:
+        #     columns = accounts + 2
+        # else:
+        columns = self.columns
         return [{'name': ''}] * (columns + 3)
 
-    def _get_columns(self):
-        context = dict(self._context or {})
-        sql = """
-            SELECT count(*) as accounts FROM (
-                SELECT DISTINCT analytical_account_id 
-                FROM encryption_mapping_line
-            ) AS A;
-        """
-        params = context.get('date_to'), context.get('date_to')
-        self.env.cr.execute(sql, params)
-        results = self.env.cr.dictfetchall()
+    # def _get_columns(self, options):
+    #     context = dict(self._context or {})
+    #     sql = """
+    #         SELECT count(*) as accounts FROM (
+    #             SELECT DISTINCT analytical_account_id
+    #             FROM encryption_mapping_line
+    #         ) AS A;
+    #     """
+    #     params = context.get('date_to'), context.get('date_to')
+    #     self.env.cr.execute(sql, params)
+    #     results = self.env.cr.dictfetchall()
 
-        if results:
-            return results[0]['accounts']
-        else:
-            return None
+    #     if results:
+    #         return results[0]['accounts']
+    #     else:
+    #         return None
 
     def _set_context(self, options):
         ctx = super(AccountEncryptionReport, self)._set_context(options)
         profit_centers = []
         if options.get('profit_center_accounts'):
-            profit_centers = [c.get('id') for c in options['profit_center_accounts'] if c.get('selected')]
+            profit_centers = [
+                c.get('id') for c in options['profit_center_accounts'] if c.get('selected')]
             profit_centers = profit_centers if len(profit_centers) > 0 else [c.get('id')
                                                                              for c in options['profit_center_accounts']]
         ctx['profit_centers'] = len(profit_centers) > 0 and profit_centers
 
         if options.get('encryption'):
-            encryptions = [c.get('id') for c in options['encryption'] if c.get('selected')]
+            encryptions = [c.get('id')
+                           for c in options['encryption'] if c.get('selected')]
             encryptions = encryptions if len(encryptions) > 0 else [c.get('id')
                                                                     for c in options['encryption']]
         ctx['encryptions'] = len(encryptions) > 0 and encryptions
 
         return ctx
 
-    def _build_options(self, previous_options=None):
+    def _get_options(self, previous_options=None):
         if not previous_options:
             previous_options = {}
-        options = super(AccountEncryptionReport, self)._build_options(previous_options)
+        options = super(AccountEncryptionReport,
+                        self)._get_options(previous_options)
         if options.get('profit_center_accounts'):
             profit_centers = self._get_profit_centers()
             options['profit_center_accounts'] = [{'id': id, 'name': profit_centers[id], 'selected': False}
@@ -88,7 +91,8 @@ class AccountEncryptionReport(models.AbstractModel):
 
         if options.get('encryption'):
             encryptions = {'cc5_cc6': 'CC5 to CC6', 'cc6_cc7': 'CC6 to CC7'}
-            options['encryption'] = [{'id': i, 'name': v, 'selected': False} for i, v in encryptions.items()]
+            options['encryption'] = [
+                {'id': i, 'name': v, 'selected': False} for i, v in encryptions.items()]
 
         # Merge old options with default from this report
         for key, value in options.items():
@@ -103,21 +107,23 @@ class AccountEncryptionReport(models.AbstractModel):
         where_args = ['%s' for profit_center_id in context['profit_centers']]
 
         sql = """
-            SELECT 
+            SELECT
                 AAA.code,
-                AAA.name    
-            FROM encryption_mapping_line EML 
-                JOIN encryption_mapping EM ON (EML.encryption_mapping_id = EM.id) 
-                JOIN account_fiscal_year AFY ON (EM.fiscal_year = AFY.id) 
-                JOIN account_analytic_account AAA ON (AAA.id = EML.analytical_account_id) 
-            WHERE AFY.date_to >= %s AND AFY.date_from <= %s 
+                AAA.name
+            FROM encryption_mapping_line EML
+                JOIN encryption_mapping EM ON (EML.encryption_mapping_id = EM.id)
+                JOIN account_fiscal_year AFY ON (EM.fiscal_year = AFY.id)
+                JOIN account_analytic_account AAA ON (AAA.id = EML.analytical_account_id)
+            WHERE AFY.date_to >= %s AND AFY.date_from <= %s
                 AND EML.cost_center IN ({})
             GROUP BY AAA.code, AAA.name
             ORDER BY AAA.code::INTEGER;
         """.format(','.join(where_args))
 
-        params_profit_center = tuple(profit_center_id for profit_center_id in context['profit_centers'])
-        params = (context.get('date_to'), context.get('date_to')) + params_profit_center
+        params_profit_center = tuple(
+            profit_center_id for profit_center_id in context['profit_centers'])
+        params = (context.get('date_to'), context.get(
+            'date_to')) + params_profit_center
         self.env.cr.execute(sql, params)
         results = self.env.cr.dictfetchall()
         return results
@@ -128,7 +134,7 @@ class AccountEncryptionReport(models.AbstractModel):
 
         sql_start = """
                 SELECT account, account_name, analytic_account, analytic_account_name,
-                    profit_center, profit_center_name, profit_center_code, 
+                    profit_center, profit_center_name, profit_center_code,
                     sum(balance) as balance, tag
                 FROM (
         """
@@ -138,9 +144,9 @@ class AccountEncryptionReport(models.AbstractModel):
                    AA.name     AS account_name,
                    AAA.code    AS analytic_account,
                    AAA.name    AS analytic_account_name,
-                   AAA_EM.id   AS profit_center,                   
+                   AAA_EM.id   AS profit_center,
                    AAA_EM.name AS profit_center_name,
-                   AAA_EM.code AS profit_center_code, 
+                   AAA_EM.code AS profit_center_code,
                    SUM(
                            EML.encryption / 100 *
                            balance / (CASE WHEN AML.company_currency_id = 2 THEN 1 ELSE RCR.rate END)
@@ -197,12 +203,13 @@ class AccountEncryptionReport(models.AbstractModel):
             ) AS A
                 GROUP BY account, account_name, analytic_account, analytic_account_name,
                          profit_center, profit_center_name, profit_center_code, tag
-                ORDER BY profit_center_name, tag, account::INTEGER 
+                ORDER BY profit_center_name, tag, account::INTEGER
         """
 
         sql = sql_start + sql_main + union + sql_all + sql_end
 
-        params_profit_center = tuple(profit_center_id for profit_center_id in context['profit_centers'])
+        params_profit_center = tuple(
+            profit_center_id for profit_center_id in context['profit_centers'])
         params = (context.get('date_to'), context.get('date_from'), 'posted', '(4|8|9)%', context.get('date_to'),
                   context.get('date_to')) + params_profit_center + ('(4|8|9)%',) + params_profit_center
         self.env.cr.execute(sql, params)
@@ -212,13 +219,13 @@ class AccountEncryptionReport(models.AbstractModel):
     def _get_profit_centers(self):
 
         sql = """
-            SELECT 
+            SELECT
                 AAA.id, AAA.name
-            FROM encryption_mapping_line EML 
-                JOIN encryption_mapping EM ON (EML.encryption_mapping_id = EM.id) 
-                JOIN account_fiscal_year AFY ON (EM.fiscal_year = AFY.id) 
-                JOIN account_analytic_account AAA ON (AAA.id = EML.cost_center) 
-            GROUP BY AAA.id, AAA.name 
+            FROM encryption_mapping_line EML
+                JOIN encryption_mapping EM ON (EML.encryption_mapping_id = EM.id)
+                JOIN account_fiscal_year AFY ON (EM.fiscal_year = AFY.id)
+                JOIN account_analytic_account AAA ON (AAA.id = EML.cost_center)
+            GROUP BY AAA.id, AAA.name
             ORDER BY AAA.code::INTEGER;
         """
         self.env.cr.execute(sql)
@@ -246,7 +253,8 @@ class AccountEncryptionReport(models.AbstractModel):
             accounts_per_profit_center[pc_id]['name'] = pc_name
             accounts_per_profit_center[pc_id]['code'] = pc_code
             if account_code not in accounts_per_profit_center[pc_id]['accounts']:
-                accounts_per_profit_center[pc_id]['accounts'][account_code] = {}
+                accounts_per_profit_center[pc_id]['accounts'][account_code] = {
+                }
                 accounts_per_profit_center[pc_id]['accounts'][account_code]['name'] = result['account_name']
                 accounts_per_profit_center[pc_id]['accounts'][account_code]['tag'] = result['tag']
             accounts_per_profit_center[pc_id]['accounts'][account_code][analytic_code] = result['balance']
@@ -314,12 +322,14 @@ class AccountEncryptionReport(models.AbstractModel):
             ORDER BY sequence
         """.format(','.join(where_args))
 
-        params_profit_center = tuple(profit_center_id for profit_center_id in context['profit_centers'])
+        params_profit_center = tuple(
+            profit_center_id for profit_center_id in context['profit_centers'])
         company = self.env['res.company'].search([('id', '=', 2)], limit=1)
         date_to = context.get('date_to') if date_to is None else date_to
         fiscal_year = company.compute_fiscalyear_dates(date_to)
         date_from = fiscal_year['date_from'] if date_from is None else date_from
-        params = (date_from, date_to, 'posted', date_to, date_to) + params_profit_center
+        params = (date_from, date_to, 'posted', date_to,
+                  date_to) + params_profit_center
 
         self.env.cr.execute(sql, params)
         results = self.env.cr.fetchall()
@@ -369,7 +379,7 @@ class AccountEncryptionReport(models.AbstractModel):
         """
         context = dict(self._context or {})
         params = context.get('date_to'), context.get('date_from'), 'posted', '(4|8|9)%', context.get('date_to'), \
-                 context.get('date_to'), pc_code
+            context.get('date_to'), pc_code
 
         self.env.cr.execute(sql, params)
         results = self.env.cr.dictfetchall()
@@ -407,7 +417,8 @@ class AccountEncryptionReport(models.AbstractModel):
         accounts_grouped = self._get_grouped_profit_center(options, line_id)
         analytical_accounts = {values['code']: values['name'].replace(values['code'], '').strip() for values in
                                self._get_analytic_accounts()}
-        count_cc6, count_cc7, last_cc6, last_cc7 = self._get_count_cc(accounts_grouped)
+        count_cc6, count_cc7, last_cc6, last_cc7 = self._get_count_cc(
+            accounts_grouped)
         total_per_analytical_account_cc6 = collections.Counter()
         total_per_analytical_account_cc7 = collections.Counter()
         total_all_cc6 = 0
@@ -422,11 +433,13 @@ class AccountEncryptionReport(models.AbstractModel):
                 no_columns = self.columns
 
             if accounts_grouped[pc]['code'][0] == '7':
-                cc6_code = accounts_grouped[pc]['code'][:0] + '6' + accounts_grouped[pc]['code'][1:]
+                cc6_code = accounts_grouped[pc]['code'][:0] + \
+                    '6' + accounts_grouped[pc]['code'][1:]
                 totals_cc6, cc6_name = self._get_totals_cc6(cc6_code)
                 no_columns += 2
 
-            class_name = re.sub(r'\W+', '', accounts_grouped[pc]['name'].replace(' ', '_'))
+            class_name = re.sub(
+                r'\W+', '', accounts_grouped[pc]['name'].replace(' ', '_'))
             lines.append({
                 'id': pc,
                 'name': '',
@@ -445,8 +458,10 @@ class AccountEncryptionReport(models.AbstractModel):
                               [{'name': 'Total {}'.format(accounts_grouped[pc]['code']),
                                 'style': 'background-color:#fdfd76'}]
             if accounts_grouped[pc]['code'][0] == '7':
-                columns_header2 += [{'name': 'TOTAL {}'.format(cc6_code), 'style': 'background-color:#fdfd76'}]
-                columns_header2 += [{'name': 'TOTAL', 'style': 'background-color:#fdfd76'}]
+                columns_header2 += [{'name': 'TOTAL {}'.format(
+                    cc6_code), 'style': 'background-color:#fdfd76'}]
+                columns_header2 += [{'name': 'TOTAL',
+                                     'style': 'background-color:#fdfd76'}]
 
             lines.append({
                 'id': 'analytical_accounts_{}'.format(pc),
@@ -461,10 +476,11 @@ class AccountEncryptionReport(models.AbstractModel):
             })
             columns_header3 = [{'name': ''}] + \
                               [{'name': analytical_accounts[v].strip() if len(analytical_accounts[v].strip()) <= 18
-                              else analytical_accounts[v].strip()[0:18]}
+                                else analytical_accounts[v].strip()[0:18]}
                                for v in analytical_accounts] + [{'name': '', 'style': 'background-color:#fdfd76'}]
             if accounts_grouped[pc]['code'][0] == '7':
-                columns_header3 += [{'name': cc6_name, 'style': 'background-color:#fdfd76'}]
+                columns_header3 += [{'name': cc6_name,
+                                     'style': 'background-color:#fdfd76'}]
                 columns_header3 += [{'name': '{} + {}'.format(cc6_code, accounts_grouped[pc]['code']),
                                      'style': 'background-color:#fdfd76'}]
 
@@ -514,7 +530,8 @@ class AccountEncryptionReport(models.AbstractModel):
 
                     try:
                         if values[analytical_account]:
-                            columns.append(round(values[analytical_account], 2))
+                            columns.append(
+                                round(values[analytical_account], 2))
                             total_per_account += values[analytical_account]
                             total_per_analytical_account[analytical_account] += values[analytical_account]
                         else:
@@ -562,15 +579,17 @@ class AccountEncryptionReport(models.AbstractModel):
             columns_total = [{'name': ''}] + \
                             [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
                              total_per_analytical_account.values()] \
-                            + [{'name': round(sum(total_per_analytical_account.values()), 2)}]
+                + [{'name': round(sum(total_per_analytical_account.values()), 2)}]
             if accounts_grouped[pc]['code'][0] == '7':
                 columns_total += [{'name': round(sum(totals_cc6.values()), 2)}]
                 columns_total += [{'name': round(sum(totals_cc6.values()) +
                                                  sum(total_per_analytical_account.values()), 2)}]
-                total_per_analytical_account_cc7.update(collections.Counter(total_per_analytical_account))
+                total_per_analytical_account_cc7.update(
+                    collections.Counter(total_per_analytical_account))
                 total_all_cc6 += total_cc6
             else:
-                total_per_analytical_account_cc6.update(collections.Counter(total_per_analytical_account))
+                total_per_analytical_account_cc6.update(
+                    collections.Counter(total_per_analytical_account))
 
             lines.append({
                 'id': 'total_{}'.format(pc),
@@ -595,19 +614,19 @@ class AccountEncryptionReport(models.AbstractModel):
 
             if count_cc6 > 1 and accounts_grouped[pc]['code'] == last_cc6:
                 columns_total_cc = [{'name': ''}] + \
-                                [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
-                                 total_per_analytical_account_cc6.values()] \
-                                + [{'name': round(sum(total_per_analytical_account_cc6.values()), 2)}]
+                    [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
+                     total_per_analytical_account_cc6.values()] \
+                    + [{'name': round(sum(total_per_analytical_account_cc6.values()), 2)}]
                 cc_name = "Total CC6"
             elif count_cc7 > 1 and accounts_grouped[pc]['code'] == last_cc7:
                 columns_total_cc = [{'name': ''}] + \
                                    [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
                                     total_per_analytical_account_cc7.values()] \
-                                   + [{'name': round(sum(total_per_analytical_account_cc7.values()), 2)},
-                                      {'name': round(total_all_cc6, 2)},
-                                      {'name': round(total_all_cc6 +
-                                                     sum(total_per_analytical_account_cc7.values()), 2)}
-                                      ]
+                    + [{'name': round(sum(total_per_analytical_account_cc7.values()), 2)},
+                       {'name': round(total_all_cc6, 2)},
+                       {'name': round(total_all_cc6 +
+                                      sum(total_per_analytical_account_cc7.values()), 2)}
+                       ]
                 cc_name = "Total CC7"
 
             if columns_total_cc:
@@ -673,7 +692,8 @@ class AccountEncryptionReport(models.AbstractModel):
         results = self._get_lpl_results()
         context = dict(self._context or {})
         date_to = context.get('date_to')
-        last_month = (parse(date_to) + relativedelta(months=-1) + relativedelta(day=31)).date()
+        last_month = (parse(date_to) + relativedelta(months=-1) +
+                      relativedelta(day=31)).date()
         first_day_month = parse(date_to).replace(day=1).date()
         results_last_month = self._get_lpl_results(date_to=last_month)
         results_month = self._get_lpl_results(date_from=first_day_month)

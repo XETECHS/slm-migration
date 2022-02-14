@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import collections
-import re
-from odoo import models, fields, api, _
-from odoo.tools.safe_eval import safe_eval
-from odoo.tools.misc import formatLang
-from dateutil.parser import parse
-from dateutil.relativedelta import relativedelta
-from datetime import datetime
-from dateutil import parser
+from odoo import models, api, _
 
 
 class BudgetAnalysisReport(models.AbstractModel):
@@ -16,7 +9,7 @@ class BudgetAnalysisReport(models.AbstractModel):
     _description = "Budget Analysis  Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '', 'mode': '', 'filter': 'this_month'}
     filter_comparison = None
     filter_cash_basis = None
     filter_all_entries = None
@@ -38,30 +31,8 @@ class BudgetAnalysisReport(models.AbstractModel):
         return templates
 
     def _get_columns_name(self, options):
-        accounts = self._get_columns()
-        if accounts:
-            columns = accounts * 4 + 10
-        else:
-            columns = self.columns
+        columns = self.columns
         return [{'name': ''}] * (columns + 3)
-
-    def _get_columns(self):
-        context = dict(self._context or {})
-        sql = """
-             SELECT count(*) as accounts FROM (
-                 SELECT DISTINCT code 
-                 FROM account_analytic_account AAA 
-                 JOIN crossovered_budget_lines CBL ON (CBL.analytic_account_id = AAA.id)
-             ) AS A;
-         """
-        params = context.get('date_to'), context.get('date_to')
-        self.env.cr.execute(sql, params)
-        results = self.env.cr.dictfetchall()
-
-        if results:
-            return results[0]['accounts']
-        else:
-            return None
 
     def _do_query(self, options, line_id):
         context = dict(self._context or {})
@@ -163,9 +134,11 @@ class BudgetAnalysisReport(models.AbstractModel):
             ORDER BY tag, account::INTEGER
         """
         sql = sql_start + sql_budget_main + union + sql_budget_all + union + sql_balance_main + union + sql_balance_all \
-              + sql_end
-        params_budget = (context.get('date_from'), context.get('date_to'), '(4|8|9)%')
-        params_balance = (context.get('date_to'), context.get('date_from'), 'posted', '(4|8|9)%', '(4|8|9)%',)
+            + sql_end
+        params_budget = (context.get('date_from'),
+                         context.get('date_to'), '(4|8|9)%')
+        params_balance = (context.get('date_to'), context.get(
+            'date_from'), 'posted', '(4|8|9)%', '(4|8|9)%',)
         self.env.cr.execute(sql, params_budget + params_balance)
         results = self.env.cr.dictfetchall()
         return results
@@ -174,9 +147,9 @@ class BudgetAnalysisReport(models.AbstractModel):
         context = dict(self._context or {})
 
         sql = """
-            SELECT AAA.code, AAA.name 
-            FROM account_analytic_account AAA 
-            JOIN crossovered_budget_lines CBL ON (CBL.analytic_account_id = AAA.id) 
+            SELECT AAA.code, AAA.name
+            FROM account_analytic_account AAA
+            JOIN crossovered_budget_lines CBL ON (CBL.analytic_account_id = AAA.id)
             WHERE CBL.date_from >= %s
             AND CBL.date_to <= %s
              GROUP BY AAA.code, AAA.name
@@ -189,7 +162,7 @@ class BudgetAnalysisReport(models.AbstractModel):
         return results
 
     def _get_grouped(self, options, line_id):
-        context = dict(self._context or {})
+        # context = dict(self._context or {})
 
         account_grouped = collections.OrderedDict()
 
@@ -238,7 +211,8 @@ class BudgetAnalysisReport(models.AbstractModel):
             columns_header2 += [{'name': ''}, {'name': ''}]
 
         columns_header2 += [{'name': '', 'style': 'background-color:#fdfd76'},
-                            {'name': 'Total 50000', 'class': 'text-right', 'style': 'background-color:#fdfd76'},
+                            {'name': 'Total 50000', 'class': 'text-right',
+                                'style': 'background-color:#fdfd76'},
                             {'name': '', 'style': 'background-color:#fdfd76'},
                             {'name': '', 'style': 'background-color:#fdfd76'}]
 
@@ -257,11 +231,13 @@ class BudgetAnalysisReport(models.AbstractModel):
         columns_header3 = [{'name': ''}]
         for v in analytical_accounts:
             columns_header3 += [{'name': ''}]
-            columns_header3 += [{'name': analytical_accounts[v].strip()[0:18], 'class': 'text-right'}]
+            columns_header3 += [{'name': analytical_accounts[v].strip()
+                                 [0:18], 'class': 'text-right'}]
             columns_header3 += [{'name': ''}, {'name': ''}]
 
         columns_header3 += [{'name': '', 'style': 'background-color:#fdfd76'},
-                            {'name': '', 'style': 'background-color:#fdfd76', 'class': 'text-right'},
+                            {'name': '', 'style': 'background-color:#fdfd76',
+                                'class': 'text-right'},
                             {'name': '', 'style': 'background-color:#fdfd76'},
                             {'name': '', 'style': 'background-color:#fdfd76'}]
 
@@ -283,10 +259,10 @@ class BudgetAnalysisReport(models.AbstractModel):
             'title_hover': '',
             'columns': [{'name': ''}] + [{'name': 'BALANCE'}, {'name': 'BUDGET'}, {'name': 'DIFF'},
                                          {'name': '%'}] * len(analytical_accounts) +
-                       [{'name': 'BALANCE', 'style': 'background: lightyellow'},
-                        {'name': 'BUDGET', 'style': 'background: lightyellow'},
-                        {'name': 'DIFF', 'style': 'background: lightyellow'},
-                        {'name': '%', 'style': 'background: lightyellow'}],
+            [{'name': 'BALANCE', 'style': 'background: lightyellow'},
+             {'name': 'BUDGET', 'style': 'background: lightyellow'},
+             {'name': 'DIFF', 'style': 'background: lightyellow'},
+             {'name': '%', 'style': 'background: lightyellow'}],
             'level': 2,
             'unfoldable': False,
             'colspan': 1,
@@ -295,17 +271,18 @@ class BudgetAnalysisReport(models.AbstractModel):
         })
         current_tag = None
         i = 0
-        total_tag = {'budget': 0, 'balance': 0}
-        total_account = {'budget': 0, 'balance': 0}
+        # total_tag = {'budget': 0, 'balance': 0}
+        # total_account = {'budget': 0, 'balance': 0}
         total_per_analytical_account = collections.OrderedDict()
 
         for account, values in accounts_grouped.items():
             if current_tag and current_tag != values['tag']:
-                lines = self.add_total_tag(account_groups_tag, current_tag, lines)
+                lines = self.add_total_tag(
+                    account_groups_tag, current_tag, lines)
 
             if current_tag != values['tag']:
                 current_tag = values['tag']
-                total_tag = {'budget': 0, 'balance': 0}
+                # total_tag = {'budget': 0, 'balance': 0}
 
             if current_tag not in account_groups_tag:
                 account_groups_tag[current_tag] = collections.OrderedDict()
@@ -316,20 +293,24 @@ class BudgetAnalysisReport(models.AbstractModel):
 
             for analytical_account in analytical_accounts:
                 if analytical_account not in account_groups_tag[values['tag']]:
-                    account_groups_tag[current_tag][analytical_account] = {'budget': 0, 'balance': 0}
+                    account_groups_tag[current_tag][analytical_account] = {
+                        'budget': 0, 'balance': 0}
                 if analytical_account not in total_per_analytical_account:
-                    total_per_analytical_account[analytical_account] = {'budget': 0, 'balance': 0}
+                    total_per_analytical_account[analytical_account] = {
+                        'budget': 0, 'balance': 0}
 
                 try:
                     if values[analytical_account]['balance'] != 0:
-                        columns.append(round(values[analytical_account]['balance'], 2))
+                        columns.append(
+                            round(values[analytical_account]['balance'], 2))
                         total_per_account['balance'] += values[analytical_account]['balance']
                         total_per_analytical_account[analytical_account]['balance'] += values[analytical_account][
                             'balance']
                     else:
                         columns.append('')
                     if values[analytical_account]['budget'] != 0:
-                        columns.append(round(values[analytical_account]['budget'], 2))
+                        columns.append(
+                            round(values[analytical_account]['budget'], 2))
                         total_per_account['budget'] += values[analytical_account]['budget']
                         total_per_analytical_account[analytical_account]['budget'] += values[analytical_account][
                             'budget']
@@ -372,7 +353,7 @@ class BudgetAnalysisReport(models.AbstractModel):
                                   {'name': round(total_per_account['balance'] - total_per_account['budget'], 2),
                                    'style': 'background-color:#ffffa6'},
                                   {'name': round(
-                                      (total_per_account['balance'] / total_per_account['budget']) -1 if
+                                      (total_per_account['balance'] / total_per_account['budget']) - 1 if
                                       total_per_account['budget'] else 0,
                                       2),
                                       'style': 'background-color:#ffffa6'}
@@ -390,16 +371,19 @@ class BudgetAnalysisReport(models.AbstractModel):
 
             i += 1
             if i == len(accounts_grouped):
-                lines = self.add_total_tag(account_groups_tag, current_tag, lines, False)
+                lines = self.add_total_tag(
+                    account_groups_tag, current_tag, lines, False)
 
         totals = []
         for analytical_account in total_per_analytical_account:
-            totals.append(total_per_analytical_account[analytical_account]['balance'])
-            totals.append(total_per_analytical_account[analytical_account]['budget'])
+            totals.append(
+                total_per_analytical_account[analytical_account]['balance'])
+            totals.append(
+                total_per_analytical_account[analytical_account]['budget'])
             totals.append(total_per_analytical_account[analytical_account]['balance'] -
                           total_per_analytical_account[analytical_account]['budget'])
             totals.append((total_per_analytical_account[analytical_account]['balance'] /
-                           total_per_analytical_account[analytical_account]['budget']) -1 if
+                           total_per_analytical_account[analytical_account]['budget']) - 1 if
                           total_per_analytical_account[analytical_account]['budget'] else 0)
         total_per_analytical_account_balance = sum(
             [total_per_analytical_account[analytical_account]['balance'] for analytical_account in
@@ -410,13 +394,14 @@ class BudgetAnalysisReport(models.AbstractModel):
         columns_total = [{'name': ''}] + \
                         [{'name': round(v, 2) if v else '', 'style': 'font-size:13px'} for v in
                          totals] \
-                        + [{'name': round(total_per_analytical_account_balance, 2)},
-                           {'name': round(total_per_analytical_account_budget, 2)},
-                           {'name': round(total_per_analytical_account_balance - total_per_analytical_account_budget,
-                                          2)},
-                           {'name': round((total_per_analytical_account_balance /
-                                           total_per_analytical_account_budget) -1
-                                          if total_per_analytical_account_budget else 0, 2)}]
+            + [{'name': round(total_per_analytical_account_balance, 2)},
+               {'name': round(
+                   total_per_analytical_account_budget, 2)},
+               {'name': round(total_per_analytical_account_balance - total_per_analytical_account_budget,
+                              2)},
+               {'name': round((total_per_analytical_account_balance /
+                               total_per_analytical_account_budget) - 1
+                              if total_per_analytical_account_budget else 0, 2)}]
         lines.append({
             'id': 'total_50000',
             'name': 'TOTAL',
@@ -437,22 +422,25 @@ class BudgetAnalysisReport(models.AbstractModel):
             'colspan': 1
         }
         lines.append(empty_line)
-
+        print ("lines", lines)
         return lines
 
     def add_total_tag(self, account_groups_tag, current_tag, lines, empty_line=True):
         total_tag = account_groups_tag[current_tag]
-        total_budget = sum([total_tag[analytical_account]['budget'] for analytical_account in total_tag])
-        total_balance = sum([total_tag[analytical_account]['balance'] for analytical_account in total_tag])
+        total_budget = sum([total_tag[analytical_account]['budget']
+                            for analytical_account in total_tag])
+        total_balance = sum([total_tag[analytical_account]['balance']
+                             for analytical_account in total_tag])
         if total_balance != 0 or total_budget != 0:
             additional_columns = 4
             values = []
             for analytical_account in total_tag:
                 values.append(total_tag[analytical_account]['balance'])
                 values.append(total_tag[analytical_account]['budget'])
-                values.append(total_tag[analytical_account]['balance'] - total_tag[analytical_account]['budget'])
                 values.append(
-                    (total_tag[analytical_account]['balance'] / total_tag[analytical_account]['budget']) -1 if
+                    total_tag[analytical_account]['balance'] - total_tag[analytical_account]['budget'])
+                values.append(
+                    (total_tag[analytical_account]['balance'] / total_tag[analytical_account]['budget']) - 1 if
                     total_tag[analytical_account]['budget'] else 0)
 
             columns = [{'name': current_tag}] + \
@@ -465,7 +453,7 @@ class BudgetAnalysisReport(models.AbstractModel):
                         'style': 'text-align:right;font-size:12px;background-color:#ffffa6'}] + \
                       [{'name': round(total_balance - total_budget, 2),
                         'style': 'text-align:right;font-size:12px;background-color:#ffffa6'}] + \
-                      [{'name': round((total_balance / total_budget) -1 if total_budget else 0, 2),
+                      [{'name': round((total_balance / total_budget) - 1 if total_budget else 0, 2),
                         'style': 'text-align:right;font-size:12px;background-color:#ffffa6'}]
 
             lines.append({
