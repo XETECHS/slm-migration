@@ -104,8 +104,15 @@ class AccountEncryptionReport(models.AbstractModel):
 
     def _get_analytic_accounts(self):
         context = dict(self._context or {})
+        profit_centers = self._get_profit_centers()
+        pc = [{'id': id, 'name': profit_centers[id], 'selected': False} for id in profit_centers]
+        if pc:
+            profit_centers = [
+                c.get('id') for c in pc if c.get('selected')]
+            profit_centers = profit_centers if len(profit_centers) > 0 else [c.get('id')
+                                                                             for c in pc]
+        context['profit_centers'] = len(profit_centers) > 0 and profit_centers or []
         where_args = ['%s' for profit_center_id in context['profit_centers']]
-
         sql = """
             SELECT
                 AAA.code,
@@ -130,8 +137,14 @@ class AccountEncryptionReport(models.AbstractModel):
 
     def _do_query(self, options, line_id, limit=False):
         context = dict(self._context or {})
+        profit_centers = []
+        if options.get('profit_center_accounts'):
+            profit_centers = [
+                c.get('id') for c in options['profit_center_accounts'] if c.get('selected')]
+            profit_centers = profit_centers if len(profit_centers) > 0 else [c.get('id')
+                                                                             for c in options['profit_center_accounts']]
+        context['profit_centers'] = len(profit_centers) > 0 and profit_centers or []
         where_args = ['%s' for profit_center_id in context['profit_centers']]
-
         sql_start = """
                 SELECT account, account_name, analytic_account, analytic_account_name,
                     profit_center, profit_center_name, profit_center_code,
@@ -238,7 +251,13 @@ class AccountEncryptionReport(models.AbstractModel):
     def _get_grouped_profit_center(self, options, line_id):
         context = dict(self._context or {})
         profit_centers = context.get('profit_centers')
-
+        profit_centers = []
+        if options.get('profit_center_accounts'):
+            profit_centers = [
+                c.get('id') for c in options['profit_center_accounts'] if c.get('selected')]
+            profit_centers = profit_centers if len(profit_centers) > 0 else [c.get('id')
+                                                                             for c in options['profit_center_accounts']]
+        context['profit_centers'] = len(profit_centers) > 0 and profit_centers
         accounts_per_profit_center = collections.OrderedDict(
             {pc_id: {'accounts': collections.OrderedDict()} for pc_id in profit_centers})
 

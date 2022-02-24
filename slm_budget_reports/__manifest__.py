@@ -43,8 +43,8 @@
     # always loaded
     'data': [
         'security/ir.model.access.csv',
-            'views/budget_encryption_report_data.xml',
-            'views/budget_encryption_mapping_view.xml',
+        'views/budget_encryption_report_data.xml',
+        'views/budget_encryption_mapping_view.xml',
     ],
     'license': 'AGPL-3',
 }

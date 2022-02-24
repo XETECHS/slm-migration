@@ -13,7 +13,8 @@ class AccountBusinessUnitReport(models.AbstractModel):
     _description = "Business Unit Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
+    filter_date = {'date_from': '', 'date_to': '',
+                   'filter': 'this_month', 'mode': 'range'}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False
@@ -42,10 +43,13 @@ class AccountBusinessUnitReport(models.AbstractModel):
     def _get_options(self, previous_options=None):
         if not previous_options:
             previous_options = {}
-        options = super(AccountBusinessUnitReport, self)._get_options(previous_options)
+        options = super(AccountBusinessUnitReport,
+                        self)._get_options(previous_options)
         if options.get('business_unit'):
-            business_units = [{'name': 'SACS', 'id': 250}, {'name': 'SCS', 'id': 252}, {'name': 'SGS', 'id': 251}]
-            options['business_unit'] = [{'id': c['id'], 'name': c['name'], 'selected': False} for c in business_units]
+            business_units = [{'name': 'SACS', 'id': 250}, {
+                'name': 'SCS', 'id': 252}, {'name': 'SGS', 'id': 251}]
+            options['business_unit'] = [
+                {'id': c['id'], 'name': c['name'], 'selected': False} for c in business_units]
 
         # Merge old options with default from this report
         for key, value in options.items():
@@ -58,7 +62,8 @@ class AccountBusinessUnitReport(models.AbstractModel):
         ctx = super(AccountBusinessUnitReport, self)._set_context(options)
         business_units = []
         if options.get('business_unit'):
-            business_units = [c.get('id') for c in options['business_unit'] if c.get('selected')]
+            business_units = [
+                c.get('id') for c in options['business_unit'] if c.get('selected')]
             business_units = business_units if len(business_units) > 0 else [c.get('id')
                                                                              for c in options['business_unit']]
         ctx['business_units'] = len(business_units) > 0 and business_units
@@ -72,7 +77,13 @@ class AccountBusinessUnitReport(models.AbstractModel):
             SELECT id, profit_center, profit_center_id, name, sequence, formula, sum(balance) as balance, type
                 FROM (
         """
-
+        business_units = []
+        if options.get('business_unit'):
+            business_units = [
+                c.get('id') for c in options['business_unit'] if c.get('selected')]
+            business_units = business_units if len(business_units) > 0 else [c.get('id')
+                                                                             for c in options['business_unit']]
+        context['business_units'] = len(business_units) > 0 and business_units
         where_args = ['%s' for profit_center in context['business_units']]
         select_expression = """
             WITH accounts_expression AS (
@@ -126,8 +137,10 @@ class AccountBusinessUnitReport(models.AbstractModel):
              JOIN {} ON BUML.{} = {}.id
              JOIN business_unit_report_layout BURL on (BUM.id = BURL.business_unit_mapping_id AND {}.id = BURL.{})
         """
-        common_tables_tag = common_tables.format('business_unit_tag BUT', 'tag', 'BUT', 'BUT', 'tag')
-        common_tables_group = common_tables.format('business_unit_group BUG', 'group', 'BUG', 'BUG', 'group')
+        common_tables_tag = common_tables.format(
+            'business_unit_tag BUT', 'tag', 'BUT', 'BUT', 'tag')
+        common_tables_group = common_tables.format(
+            'business_unit_group BUG', 'group', 'BUG', 'BUG', 'group')
 
         account_tables = """
             JOIN account_account AA_ID ON (AA_ID.id = BUML.account_id)
@@ -234,27 +247,29 @@ class AccountBusinessUnitReport(models.AbstractModel):
         union = """ UNION ALL """
 
         select_tag_accounts = select_fields_tag + common_tables_tag + account_tables + move_currency_tables + where + \
-                              group_by_tag
+            group_by_tag
         select_group_accounts = select_fields_group + common_tables_group + account_tables + move_currency_tables + \
-                                where + group_by_group
+            where + group_by_group
         select_tag_account_tag = select_fields_tag + common_tables_tag + account_tag_tables + move_currency_tables + \
-                                 where + group_by_tag
+            where + group_by_tag
         select_group_account_tag = select_fields_group + common_tables_group + account_tag_tables + \
-                                   move_currency_tables + where + group_by_group
+            move_currency_tables + where + group_by_group
         select_tag_account_group = select_fields_tag + common_tables_tag + account_group_tables + move_currency_tables \
-                                   + where + group_by_tag
+            + where + group_by_tag
         select_group_account_group = select_fields_group + common_tables_group + account_group_tables + move_currency_tables \
-                                     + where + group_by_group
+            + where + group_by_group
         select_tag_expression = select_fields_tag + common_tables_tag + account_expression_tables + \
-                                move_currency_tables + where + where_cond_expression + group_by_tag
+            move_currency_tables + where + where_cond_expression + group_by_tag
         select_group_expression = select_fields_group + common_tables_group + account_expression_tables + \
-                                  move_currency_tables + where + where_cond_expression + group_by_group
+            move_currency_tables + where + where_cond_expression + group_by_group
 
         sql = select_all + select_tag_accounts + union + select_group_accounts + union + select_tag_account_tag + \
-              union + select_group_account_tag + union + select_tag_account_group + union + select_group_account_group \
-              + union + select_tag_expression + union + select_group_expression + union + select_all_empty + end_select
+            union + select_group_account_tag + union + select_tag_account_group + union + select_group_account_group \
+            + union + select_tag_expression + union + \
+            select_group_expression + union + select_all_empty + end_select
 
-        params_profit_center = tuple(profit_center for profit_center in context['business_units'])
+        params_profit_center = tuple(
+            profit_center for profit_center in context['business_units'])
 
         params = ('%',) + params_profit_center + \
                  ((context.get('date_from'), context.get('date_to'), '(4|8|9)%', 'posted') + params_profit_center +
@@ -321,7 +336,13 @@ class AccountBusinessUnitReport(models.AbstractModel):
         context = dict(self._context or {})
         results = self._do_query(options, line_id)
         overhead = self._do_query_overhead()
-
+        business_units = []
+        if options.get('business_unit'):
+            business_units = [
+                c.get('id') for c in options['business_unit'] if c.get('selected')]
+            business_units = business_units if len(business_units) > 0 else [c.get('id')
+                                                                             for c in options['business_unit']]
+        context['business_units'] = len(business_units) > 0 and business_units
         for profit_center_id in context['business_units']:
             results_by_code = {'E{}'.format(result['id']): result['balance'] for result in results
                                if result['profit_center_id'] == profit_center_id}
@@ -330,13 +351,17 @@ class AccountBusinessUnitReport(models.AbstractModel):
                 if result['profit_center_id'] == profit_center_id and result['type'] == 'overhead':
                     try:
                         results[i]['balance'] = overhead[profit_center_id]
-                        results_by_code['E{}'.format(result['id'])] = overhead[profit_center_id]
+                        results_by_code['E{}'.format(
+                            result['id'])] = overhead[profit_center_id]
                     except KeyError:
                         pass
                 if result['profit_center_id'] == profit_center_id and result['type'] == 'total':
-                    formula = 'result = {}'.format(re.sub(r"([0-9]+(\.[0-9]+)?)", r"E\1", result['formula']).strip())
-                    safe_eval(formula, results_by_code, mode='exec', nocopy=True)
-                    results_by_code['E{}'.format(result['id'])] = results_by_code['result']
+                    formula = 'result = {}'.format(
+                        re.sub(r"([0-9]+(\.[0-9]+)?)", r"E\1", result['formula']).strip())
+                    safe_eval(formula, results_by_code,
+                              mode='exec', nocopy=True)
+                    results_by_code['E{}'.format(
+                        result['id'])] = results_by_code['result']
                     results[i]['balance'] = results_by_code['result']
         return results
 

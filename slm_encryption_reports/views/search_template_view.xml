@@ -96,7 +96,7 @@
         </template>
 
         <template id="encryption_search_template" inherit_id="account_reports.search_template">
-            <xpath expr="//div[@class='btn-group dropdown o_account_reports_filter_analytic']" position="after">
+            <xpath expr="//div" position="after">
                 <div class="btn-group dropdown o_account_reports_filter_encryption"
                      t-if="options.get('encryption') != None">
                     <t t-call="slm_encryption_reports.search_template_encryptions"/>

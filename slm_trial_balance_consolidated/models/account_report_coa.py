@@ -12,39 +12,38 @@ class report_account_coa(models.AbstractModel):
     #     templates['main_table_header_template'] = 'slm_trial_balance_consolidated.template_coa_table_header'
     #     return templates
 
-    # def _get_super_columns(self, options):
-    #     date_cols = options.get('date') and [options['date']] or []
-    #     date_cols += (options.get('comparison') or {}).get('periods', [])
-
-    #     columns = [{'string': _('Initial Balance')}]
-    #     columns += reversed(date_cols)
-    #     columns += [{'string': 'Total'}]
-    #     columns += [{'string': _('Balance')}]
-    #     columns += [{'string': _('Profit & Loss')}]
-
-    #     return {'columns': columns, 'x_offset': 1, 'merge': 2}
-
-    # def _get_columns_name(self, options):
-    #     columns = [
-    #         {'name': '', 'style': 'width:40%'},
-    #         {'name': _('Debit'), 'class': 'number'},
-    #         {'name': _('Credit'), 'class': 'number'},
-    #     ]
-    #     if options.get('comparison') and options['comparison'].get('periods'):
-    #         columns += [
-    #             {'name': _('Debit'), 'class': 'number'},
-    #             {'name': _('Credit'), 'class': 'number'},
-    #         ] * len(options['comparison']['periods'])
-    #     return columns + [
-    #         {'name': _('Debit'), 'class': 'number'},
-    #         {'name': _('Credit'), 'class': 'number'},
-    #         {'name': _('Debit'), 'class': 'number'},
-    #         {'name': _('Credit'), 'class': 'number'},
-    #         {'name': _('Debit'), 'class': 'number'},
-    #         {'name': _('Credit'), 'class': 'number'},
-    #         {'name': _('Debit'), 'class': 'number'},
-    #         {'name': _('Credit'), 'class': 'number'},
-    #     ]
+    @api.model
+    def _get_columns(self, options):
+        header1 = [
+            {'name': '', 'style': 'width: 100%'},
+            {'name': _('Initial Balance'), 'class': 'number', 'colspan': 2},
+        ] + [
+            {'name': period['string'], 'class': 'number', 'colspan': 2}
+            for period in reversed(options['comparison'].get('periods', []))
+        ] + [
+            {'name': options['date']['string'], 'class': 'number', 'colspan': 2},
+            {'name': _('End Balance'), 'class': 'number', 'colspan': 2},
+            {'name': _('Profit & Loss'), 'class': 'number', 'colspan': 2},
+        ]
+        header2 = [
+            {'name': '', 'style': 'width:40%'},
+            {'name': _('Debit'), 'class': 'number o_account_coa_column_contrast'},
+            {'name': _('Credit'), 'class': 'number o_account_coa_column_contrast'},
+        ]
+        if options.get('comparison') and options['comparison'].get('periods'):
+            header2 += [
+                {'name': _('Debit'), 'class': 'number o_account_coa_column_contrast'},
+                {'name': _('Credit'), 'class': 'number o_account_coa_column_contrast'},
+            ] * len(options['comparison']['periods'])
+        header2 += [
+            {'name': _('Debit'), 'class': 'number o_account_coa_column_contrast'},
+            {'name': _('Credit'), 'class': 'number o_account_coa_column_contrast'},
+            {'name': _('Debit'), 'class': 'number o_account_coa_column_contrast'},
+            {'name': _('Credit'), 'class': 'number o_account_coa_column_contrast'},
+            {'name': _('Debit'), 'class': 'number o_account_coa_column_contrast'},
+            {'name': _('Credit'), 'class': 'number o_account_coa_column_contrast'},
+        ]
+        return [header1, header2]
 
     def _post_process(self, grouped_accounts, initial_balances, options, comparison_table):
         lines = []
@@ -144,57 +143,77 @@ class report_account_coa(models.AbstractModel):
         })
         return lines
 
-    # @api.model
-    # def _get_lines(self, options, line_id=None):
-    #     context = self.env.context
-    #     company_id = context.get('company_id') or self.env.user.company_id
-    #     grouped_accounts = {}
-    #     initial_balances = {}
-    #     comparison_table = [options.get('date')]
-    #     comparison_table += options.get(
-    #         'comparison') and options['comparison'].get('periods') or []
+    @api.model
+    def _get_lines(self, options, line_id=None):
+        # Create new options with 'unfold_all' to compute the initial balances.
+        # Then, the '_do_query' will compute all sums/unaffected earnings/initial balances for all comparisons.
+        new_options = options.copy()
+        new_options['unfold_all'] = True
+        options_list = self._get_options_periods_list(new_options)
+        accounts_results, taxes_results = self.env['account.general.ledger']._do_query(options_list, fetch_lines=False)
 
-    #     # get the balance of accounts for each period
-    #     period_number = 0
-    #     for period in reversed(comparison_table):
-    #         account_codes = {}
-    #         res = self.with_context(date_from_aml=period['date_from'], date_to=period['date_to'], date_from=period['date_from'] and company_id.compute_fiscalyear_dates(fields.Date.from_string(period['date_from']))['date_from'] or None)._group_by_account_id(
-    #             options, line_id)  # Aml go back to the beginning of the user chosen range but the amount on the account line should go back to either the beginning of the fy or the beginning of times depending on the account
-    #         if period_number == 0:
-    #             initial_balances = dict(
-    #                 [(k, res[k]['initial_bal']['balance']) for k in res])
-    #             initial_balances = {}
-    #             initial_balances_codes = {}
-    #             for k in res:
-    #                 if k.code not in initial_balances_codes:
-    #                     initial_balances[k] = res[k]['initial_bal']['balance']
-    #                     initial_balances_codes[k.code] = k
-    #                 else:
-    #                     parent_account = initial_balances_codes[k.code]
-    #                     initial_balances[parent_account] += res[k]['initial_bal']['balance']
-    #         for account in res:
-    #             if account not in grouped_accounts and account.code not in account_codes:
-    #                 grouped_accounts[account] = [
-    #                     {'balance': 0, 'debit': 0, 'credit': 0} for p in comparison_table]
-    #             if account.code not in account_codes:
-    #                 account_codes[account.code] = account
-    #                 grouped_accounts[account][period_number]['balance'] = res[account]['balance'] - \
-    #                     res[account]['initial_bal']['balance']
-    #                 grouped_accounts[account][period_number]['debit'] = res[account]['debit'] - \
-    #                     res[account]['initial_bal']['debit']
-    #                 grouped_accounts[account][period_number]['credit'] = res[account]['credit'] - \
-    #                     res[account]['initial_bal']['credit']
-    #             else:
-    #                 parent_account = account_codes[account.code]
-    #                 grouped_accounts[parent_account][period_number]['balance'] += res[account]['balance'] - \
-    #                     res[account]['initial_bal']['balance']
-    #                 grouped_accounts[parent_account][period_number]['debit'] += res[account]['debit'] - \
-    #                     res[account]['initial_bal']['debit']
-    #                 grouped_accounts[parent_account][period_number]['credit'] += res[account]['credit'] - \
-    #                     res[account]['initial_bal']['credit']
+        lines = []
+        totals = [0.0] * (2 * (len(options_list) + 2))
 
-    #         period_number += 1
-    #     # build the report
-    #     lines = self._post_process(
-    #         grouped_accounts, initial_balances, options, comparison_table)
-    #     return lines
+        # Add lines, one per account.account record.
+        for account, periods_results in accounts_results:
+            sums = []
+            account_balance = 0.0
+            for i, period_values in enumerate(reversed(periods_results)):
+                account_sum = period_values.get('sum', {})
+                account_un_earn = period_values.get('unaffected_earnings', {})
+                account_init_bal = period_values.get('initial_balance', {})
+
+                if i == 0:
+                    # Append the initial balances.
+                    initial_balance = account_init_bal.get('balance', 0.0) + account_un_earn.get('balance', 0.0)
+                    sums += [
+                        initial_balance > 0 and initial_balance or 0.0,
+                        initial_balance < 0 and -initial_balance or 0.0,
+                    ]
+                    account_balance += initial_balance
+
+                # Append the debit/credit columns.
+                sums += [
+                    account_sum.get('debit', 0.0) - account_init_bal.get('debit', 0.0),
+                    account_sum.get('credit', 0.0) - account_init_bal.get('credit', 0.0),
+                ]
+                account_balance += sums[-2] - sums[-1]
+
+            # Append the totals.
+            sums += [
+                account_balance > 0 and account_balance or 0.0,
+                account_balance < 0 and -account_balance or 0.0,
+            ]
+
+            # account.account report line.
+            columns = []
+            for i, value in enumerate(sums):
+                # Update totals.
+                totals[i] += value
+
+                # Create columns.
+                columns.append({'name': self.format_value(value, blank_if_zero=True), 'class': 'number', 'no_format_name': value})
+
+            name = account.name_get()[0][1]
+
+            lines.append({
+                'id': self._get_generic_line_id('account.account', account.id),
+                'name': name,
+                'title_hover': name,
+                'columns': columns,
+                'unfoldable': False,
+                'caret_options': 'account.account',
+                'class': 'o_account_searchable_line o_account_coa_column_contrast',
+            })
+
+        # Total report line.
+        lines.append({
+             'id': self._get_generic_line_id(None, None, markup='grouped_accounts_total'),
+             'name': _('Total'),
+             'class': 'total o_account_coa_column_contrast',
+             'columns': [{'name': self.format_value(total), 'class': 'number'} for total in totals],
+             'level': 1,
+        })
+
+        return lines

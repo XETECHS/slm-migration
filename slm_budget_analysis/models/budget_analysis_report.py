@@ -9,7 +9,7 @@ class BudgetAnalysisReport(models.AbstractModel):
     _description = "Budget Analysis  Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'mode': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '', 'mode': 'range', 'filter': 'this_month'}
     filter_comparison = None
     filter_cash_basis = None
     filter_all_entries = None

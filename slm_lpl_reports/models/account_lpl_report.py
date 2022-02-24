@@ -15,7 +15,8 @@ class AccountLPLReport(models.AbstractModel):
     _description = "Layout Profit & Loss Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
+    filter_date = {'date_from': '', 'date_to': '',
+                   'filter': 'this_month', 'mode': 'range'}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False
@@ -48,7 +49,8 @@ class AccountLPLReport(models.AbstractModel):
         ctx = super(AccountLPLReport, self)._set_context(options)
         tags = []
         if options.get('tags'):
-            tags = [tag.get('id') for tag in options['tags'] if tag.get('selected')]
+            tags = [tag.get('id')
+                    for tag in options['tags'] if tag.get('selected')]
             tags = tags if len(tags) > 0 else []
         ctx['tags'] = len(tags) > 0 and tags
 
@@ -63,9 +65,11 @@ class AccountLPLReport(models.AbstractModel):
         options = super(AccountLPLReport, self)._get_options(previous_options)
         if options.get('tags'):
             tags = self._get_tags()
-            options['tags'] = [{'id': id, 'name': tags[id], 'selected': False} for id in tags]
+            options['tags'] = [
+                {'id': id, 'name': tags[id], 'selected': False} for id in tags]
         if options.get('subgroups'):
-            options['subgroups'] = [{'id': 1, 'name': 'Yes', 'selected': False}]
+            options['subgroups'] = [
+                {'id': 1, 'name': 'Yes', 'selected': False}]
 
         # Merge old options with default from this report
         for key, value in options.items():
@@ -113,7 +117,8 @@ class AccountLPLReport(models.AbstractModel):
                     {2}
         """
         sql_groups = sql_main.format(report_id, join_groups, '')
-        sql_without_groups = sql_main.format(report_id, '', where_without_groups)
+        sql_without_groups = sql_main.format(
+            report_id, '', where_without_groups)
         sql = """
             SELECT name,
                 (CASE
@@ -139,7 +144,8 @@ class AccountLPLReport(models.AbstractModel):
         """.format(report_id, sql_groups, sql_without_groups)
         company = self.env['res.company'].search([('id', '=', 2)], limit=1)
         date_to = context.get('date_to') if date_to is None else date_to
-        date_to = parse(date_to).date() if isinstance(date_to, str) else date_to
+        date_to = parse(date_to).date() if isinstance(
+            date_to, str) else date_to
 
         if balance:
             date_from = datetime.fromtimestamp(0)
@@ -187,7 +193,8 @@ class AccountLPLReport(models.AbstractModel):
                             {2}
                 """
         sql_groups = sql_main.format(report_id, join_groups, '')
-        sql_without_groups = sql_main.format(report_id, '', where_without_groups)
+        sql_without_groups = sql_main.format(
+            report_id, '', where_without_groups)
         sql = """
                     SELECT name,
                         (CASE
@@ -214,7 +221,8 @@ class AccountLPLReport(models.AbstractModel):
 
         company = self.env['res.company'].search([('id', '=', 2)], limit=1)
         date_to = context.get('date_to') if date_to is None else date_to
-        date_to = parse(date_to).date() if isinstance(date_to, str) else date_to
+        date_to = parse(date_to).date() if isinstance(
+            date_to, str) else date_to
         if balance:
             date_from = datetime.fromtimestamp(0)
         else:
@@ -256,7 +264,8 @@ class AccountLPLReport(models.AbstractModel):
                         """
 
         select_subgroups = "ASG.name, ASG.id," if context['show_subgroups'] else ''
-        join_subgroups = "LEFT JOIN account_subgroup ASG ON (ASG.id = AA.subgroup_id)" if context['show_subgroups'] else ''
+        join_subgroups = "LEFT JOIN account_subgroup ASG ON (ASG.id = AA.subgroup_id)" if context[
+            'show_subgroups'] else ''
 
         sql_main = """
             SELECT AG.name AS group_name,
@@ -299,7 +308,8 @@ class AccountLPLReport(models.AbstractModel):
             WHERE AAAT.account_account_tag_id = %s
             {2}
         """
-        sql_groups = sql_main.format(report_id, join_groups, '', select_subgroups, join_subgroups)
+        sql_groups = sql_main.format(
+            report_id, join_groups, '', select_subgroups, join_subgroups)
         sql_without_groups = sql_main.format(report_id, '', where_without_groups,
                                              select_subgroups, join_subgroups)
 
@@ -317,7 +327,8 @@ class AccountLPLReport(models.AbstractModel):
         """.format(sql_groups, sql_without_groups, order, group_by_subgroups)
         company = self.env['res.company'].search([('id', '=', 2)], limit=1)
         date_to = context.get('date_to') if date_to is None else date_to
-        date_to = parse(date_to).date() if isinstance(date_to, str) else date_to
+        date_to = parse(date_to).date() if isinstance(
+            date_to, str) else date_to
         if balance:
             date_from = datetime.fromtimestamp(0)
         else:
@@ -344,7 +355,8 @@ class AccountLPLReport(models.AbstractModel):
                                     WHERE slm_financial_reports_define_lines_id = SFRDL.id) = 0
                                 """
         select_subgroups = "ASG.name, ASG.id," if context['show_subgroups'] else ''
-        join_subgroups = "LEFT JOIN account_subgroup ASG ON (ASG.id = AA.subgroup_id)" if context['show_subgroups'] else ''
+        join_subgroups = "LEFT JOIN account_subgroup ASG ON (ASG.id = AA.subgroup_id)" if context[
+            'show_subgroups'] else ''
 
         sql_main = """
             SELECT AG.name AS group_name, AG.id AS group_id, {3} SUM(planned_amount) AS balance
@@ -381,7 +393,8 @@ class AccountLPLReport(models.AbstractModel):
                             WHERE AAAT.account_account_tag_id = %s
                             {2}
         """
-        sql_groups = sql_main.format(report_id, join_groups, '', select_subgroups, join_subgroups)
+        sql_groups = sql_main.format(
+            report_id, join_groups, '', select_subgroups, join_subgroups)
         sql_without_groups = sql_main.format(report_id, '', where_without_groups, select_subgroups,
                                              join_subgroups)
 
@@ -400,7 +413,8 @@ class AccountLPLReport(models.AbstractModel):
 
         company = self.env['res.company'].search([('id', '=', 2)], limit=1)
         date_to = context.get('date_to') if date_to is None else date_to
-        date_to = parse(date_to).date() if isinstance(date_to, str) else date_to
+        date_to = parse(date_to).date() if isinstance(
+            date_to, str) else date_to
         if balance:
             date_from = datetime.fromtimestamp(0)
         else:
@@ -419,16 +433,19 @@ class AccountLPLReport(models.AbstractModel):
             results = self._do_query_lpl_budget(date_from, date_to)
         else:
             results = self._do_query_lpl(date_from, date_to)
-        results_by_code = {result['code']: result['balance'] for result in results}
+        results_by_code = {result['code']: result['balance']
+                           for result in results}
         results_by_code['result'] = 0
         results_by_code['self'] = self
         results_by_code['budget'] = budget
         results_by_code['date_to'] = date_to
         for i, result in enumerate(results):
             if result['type'] == 'tittle' and result['formula']:
-                safe_eval(result['formula'], results_by_code, mode='exec', nocopy=True)
+                safe_eval(result['formula'], results_by_code,
+                          mode='exec', nocopy=True)
                 if result['sign'] == '+':
-                    results_by_code[result['code']] = abs(results_by_code['result'])
+                    results_by_code[result['code']] = abs(
+                        results_by_code['result'])
                     results[i]['balance'] = abs(results_by_code['result'])
                 else:
                     results_by_code[result['code']] = results_by_code['result']
@@ -440,9 +457,16 @@ class AccountLPLReport(models.AbstractModel):
     def _get_lines(self, options, line_id=None):
         lines = []
         context = dict(self._context or {})
+        if options.get('date') and options['date'].get('date_from'):
+            context['date_from'] = options['date']['date_from']
+        if options.get('date'):
+            context['date_to'] = options['date'].get(
+                'date_to') or options['date'].get('date')
         date_to = parse(context.get('date_to'))
-        last_day_last_month = (date_to + relativedelta(months=-1) + relativedelta(day=31)).date()
-        first_day_last_month = (date_to + relativedelta(months=-1)).replace(day=1).date()
+        last_day_last_month = (
+            date_to + relativedelta(months=-1) + relativedelta(day=31)).date()
+        first_day_last_month = (
+            date_to + relativedelta(months=-1)).replace(day=1).date()
         date_last_year = date_to + relativedelta(years=-1)
 
         lines.append({
@@ -455,10 +479,10 @@ class AccountLPLReport(models.AbstractModel):
                            for v in [date_to.strftime('%b %Y'), '', date_to.strftime('%b %Y'), '',
                                      date_last_year.strftime('%b %Y'), '',
                                      last_day_last_month.strftime('%b %Y'), '']]
-                       + [{'name': v, 'style': 'text-align:center;font-size:15px;background-color:lightblue',
+            + [{'name': v, 'style': 'text-align:center;font-size:15px;background-color:lightblue',
                            'colspan': 1}
-                          for v in
-                          ['Afwijking', 'Afwijking Tov', 'Afwijking Tov']],
+               for v in
+               ['Afwijking', 'Afwijking Tov', 'Afwijking Tov']],
             'level': 1,
             'unfoldable': False,
             'colspan': 2,
@@ -473,10 +497,10 @@ class AccountLPLReport(models.AbstractModel):
                          'colspan': 1}
                         for v in
                         ['Realisatie', '', 'Begroting', '', 'Realisatie', '', 'Realisatie', '']]
-                       + [{'name': v, 'style': 'text-align:center;font-size:15px;background-color:lightblue;width:10%',
+            + [{'name': v, 'style': 'text-align:center;font-size:15px;background-color:lightblue;width:10%',
                            'colspan': 1}
-                          for v in
-                          ['Tov Begroting', 'Realisatie Vorig Jaar', 'Realisatie Vorig Maand']],
+               for v in
+               ['Tov Begroting', 'Realisatie Vorig Jaar', 'Realisatie Vorig Maand']],
             'level': 1,
             'unfoldable': False,
             'colspan': 2,
@@ -495,16 +519,24 @@ class AccountLPLReport(models.AbstractModel):
             'style': 'text-align:left;font-size:15px;background-color:#eff5f7',
             'class': 'lpl_sticky_header'
         })
-
+        tags = []
+        if options.get('tags'):
+            tags = [tag.get('id')
+                    for tag in options['tags'] if tag.get('selected')]
+            tags = tags if len(tags) > 0 else []
+        context['tags'] = len(tags) > 0 and tags
         if context['tags']:
-            lines = self._get_lines_lpl_notes(lines, context, last_day_last_month, date_last_year)
+            lines = self._get_lines_lpl_notes(
+                lines, context, last_day_last_month, date_last_year)
         else:
-            lines = self._get_lines_lpl(lines, last_day_last_month, date_last_year)
+            lines = self._get_lines_lpl(
+                lines, last_day_last_month, date_last_year)
         return lines
 
     def _get_lines_lpl(self, lines, last_day_last_month, date_last_year, use_total=False):
         results = self._get_layout_results()
-        results_last_month = self._get_layout_results(date_to=last_day_last_month)
+        results_last_month = self._get_layout_results(
+            date_to=last_day_last_month)
         results_last_year = self._get_layout_results(date_to=date_last_year)
         results_budget = self._get_layout_results(budget=True)
         # results_budget_last_month = self._get_lpl_results(date_to=last_day_last_month, budget=True)
@@ -543,15 +575,24 @@ class AccountLPLReport(models.AbstractModel):
                     'title_hover': result['name'],
                     'columns': [{'name': v, 'style': 'text-align:right'}
                                 for v in [round(result['balance'], 2),
-                                          self._get_percentage(result['balance'], total),
-                                          round(results_budget[i]['balance'], 2),
-                                          self._get_percentage(results_budget[i]['balance'], total_budget),
-                                          round(results_last_year[i]['balance'], 2),
-                                          self._get_percentage(results_last_year[i]['balance'], total_last_year),
-                                          round(results_last_month[i]['balance'], 2),
-                                          self._get_percentage(results_last_month[i]['balance'], total_last_month),
-                                          round(result['balance'] - results_budget[i]['balance'], 2),
-                                          round(results[i]['balance'] - results_last_year[i]['balance'], 2),
+                                          self._get_percentage(
+                                              result['balance'], total),
+                                          round(
+                                              results_budget[i]['balance'], 2),
+                                          self._get_percentage(
+                                              results_budget[i]['balance'], total_budget),
+                                          round(
+                                              results_last_year[i]['balance'], 2),
+                                          self._get_percentage(
+                                              results_last_year[i]['balance'], total_last_year),
+                                          round(
+                                              results_last_month[i]['balance'], 2),
+                                          self._get_percentage(
+                                              results_last_month[i]['balance'], total_last_month),
+                                          round(
+                                              result['balance'] - results_budget[i]['balance'], 2),
+                                          round(
+                                              results[i]['balance'] - results_last_year[i]['balance'], 2),
                                           round(results[i]['balance'] - results_last_month[i]['balance'], 2)]],
                     'level': 2,
                     'unfoldable': False,
@@ -592,9 +633,12 @@ class AccountLPLReport(models.AbstractModel):
                 order = 'ASC'
             else:
                 order = 'DESC'
-            results_last_month = self._do_query_lpl_tag(tag, context, date_to=last_day_last_month, order=order)
-            results_last_year = self._do_query_lpl_tag(tag, context, date_to=date_last_year, order=order)
-            results_budget = self._do_query_lpl_budget_tag(tag, context, order=order)
+            results_last_month = self._do_query_lpl_tag(
+                tag, context, date_to=last_day_last_month, order=order)
+            results_last_year = self._do_query_lpl_tag(
+                tag, context, date_to=date_last_year, order=order)
+            results_budget = self._do_query_lpl_budget_tag(
+                tag, context, order=order)
             name = self._get_tags()[tag]
 
             lines.append({
@@ -628,8 +672,10 @@ class AccountLPLReport(models.AbstractModel):
             for i, result in enumerate(results):
                 if result['group_name'] != current_group:
                     if subgroups:
-                        self.add_subtotal_group(current_group, lines, style_subheader, total_group, total_tag)
-                    subgroups = 'name' in result and bool(result['name']) and show_subgroups
+                        self.add_subtotal_group(
+                            current_group, lines, style_subheader, total_group, total_tag)
+                    subgroups = 'name' in result and bool(
+                        result['name']) and show_subgroups
                     if subgroups:
                         total_group = [0, 0, 0, 0]
                         current_group = result['group_name']
@@ -661,20 +707,29 @@ class AccountLPLReport(models.AbstractModel):
                     row_name = result['group_name']
                 if row_name:
                     lines.append({
-                        'id': result['id'] if 'id'in result else result['group_id'],
+                        'id': result['id'] if 'id' in result else result['group_id'],
                         'name': row_name,
                         'title_hover': result['name'] if subgroups else result['group_name'],
                         'columns': [{'name': v, 'style': 'text-align:right;text-indent:0;font-weight:normal'}
                                     for v in [round(result['balance'], 2),
-                                              self._get_percentage(result['balance'], total_tag[0]),
-                                              round(results_budget[i]['balance'], 2),
-                                              self._get_percentage(results_budget[i]['balance'], total_tag[1]),
-                                              round(results_last_year[i]['balance'], 2),
-                                              self._get_percentage(results_last_year[i]['balance'], total_tag[2]),
-                                              round(results_last_month[i]['balance'], 2),
-                                              self._get_percentage(results_last_month[i]['balance'], total_tag[3]),
-                                              round(result['balance'] - results_budget[i]['balance'], 2),
-                                              round(result['balance'] - results_last_year[i]['balance'], 2),
+                                              self._get_percentage(
+                                                  result['balance'], total_tag[0]),
+                                              round(
+                                                  results_budget[i]['balance'], 2),
+                                              self._get_percentage(
+                                                  results_budget[i]['balance'], total_tag[1]),
+                                              round(
+                                                  results_last_year[i]['balance'], 2),
+                                              self._get_percentage(
+                                                  results_last_year[i]['balance'], total_tag[2]),
+                                              round(
+                                                  results_last_month[i]['balance'], 2),
+                                              self._get_percentage(
+                                                  results_last_month[i]['balance'], total_tag[3]),
+                                              round(
+                                                  result['balance'] - results_budget[i]['balance'], 2),
+                                              round(
+                                                  result['balance'] - results_last_year[i]['balance'], 2),
                                               round(result['balance'] - results_last_month[i]['balance'], 2)]],
                         'level': 3,
                         'unfoldable': False,
@@ -682,7 +737,8 @@ class AccountLPLReport(models.AbstractModel):
                         'style': style_row
                     })
             if subgroups:
-                self.add_subtotal_group(current_group, lines, style_subheader, total_group, total_tag)
+                self.add_subtotal_group(
+                    current_group, lines, style_subheader, total_group, total_tag)
 
             lines.append({
                 'id': 'total_' + str(tag),
@@ -691,7 +747,8 @@ class AccountLPLReport(models.AbstractModel):
                 'columns': [{'name': v, 'style': 'text-align:right'} for v in
                             [round(total_tag[0], 2), 100.00, round(total_tag[1], 2), 100.00,
                              round(total_tag[2], 2), 100.00,
-                             round(total_tag[3], 2), 100.00, round(total_tag[0] - total_tag[1], 2),
+                             round(total_tag[3], 2), 100.00, round(
+                                 total_tag[0] - total_tag[1], 2),
                              round(total_tag[0] - total_tag[2], 2),
                              round(total_tag[0] - total_tag[3], 2)]],
                 'level': 2,
@@ -721,9 +778,12 @@ class AccountLPLReport(models.AbstractModel):
                 'title_hover': '',
                 'columns': [{'name': v, 'style': 'text-align:right'} for v in
                             [round(total_group[0], 2), round(self._get_percentage(total_group[0], total_tag[0]), 2),
-                             round(total_group[1], 2), round(self._get_percentage(total_group[1], total_tag[1]), 2),
-                             round(total_group[2], 2), round(self._get_percentage(total_group[2], total_tag[2]), 2),
-                             round(total_group[3], 2), round(self._get_percentage(total_group[3], total_tag[3]), 2),
+                             round(total_group[1], 2), round(
+                                 self._get_percentage(total_group[1], total_tag[1]), 2),
+                             round(total_group[2], 2), round(
+                                 self._get_percentage(total_group[2], total_tag[2]), 2),
+                             round(total_group[3], 2), round(
+                                 self._get_percentage(total_group[3], total_tag[3]), 2),
                              round(total_group[0] - total_group[1], 2), 0,
                              round(total_group[0] - total_group[3], 2)]],
                 'level': 3,

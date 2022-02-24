@@ -4,6 +4,7 @@ import re
 from decimal import Decimal
 from odoo import models, fields, api, _
 from odoo.tools.safe_eval import safe_eval
+from odoo.exceptions import ValidationError 
 
 
 class AccountSLMGroupTotalReport(models.AbstractModel):
@@ -11,7 +12,7 @@ class AccountSLMGroupTotalReport(models.AbstractModel):
     _description = "SLM Group Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
+    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': 'range'}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False

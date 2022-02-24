@@ -17,7 +17,7 @@ class ComparisonEncryptionReport(models.AbstractModel):
     _inherit = "account.report"
 
     filter_date = {'date_from': '', 'date_to': '',
-                   'filter': 'this_month', 'mode': ''}
+                   'filter': 'this_month', 'mode': 'range'}
     filter_comparison = None
     filter_cash_basis = None
     filter_all_entries = None
@@ -84,7 +84,6 @@ class ComparisonEncryptionReport(models.AbstractModel):
         return options
 
     def _get_profit_centers(self):
-        context = dict(self._context or {})
         sql = """
             SELECT
                 AAA.id, AAA.name
@@ -97,13 +96,16 @@ class ComparisonEncryptionReport(models.AbstractModel):
 
         self.env.cr.execute(sql)
         results = self.env.cr.dictfetchall()
-
+        print ('results', results)
         return {result['id']: result['name'] for result in results}
 
     def _get_analytic_accounts(self):
         context = dict(self._context or {})
+        profit_centers = context.get('profit_centers') if 'profit_centers' in context else False
+        if not profit_centers:
+            profit_centers = self._get_profit_centers()
+            context['profit_centers'] = profit_centers
         where_args = ['%s' for profit_center_id in context['profit_centers']]
-
         where_date, where_date_args = self._get_dates(context)
 
         sql = """
@@ -152,6 +154,10 @@ class ComparisonEncryptionReport(models.AbstractModel):
 
     def _do_query(self, options, line_id):
         context = dict(self._context or {})
+        profit_centers = context.get('profit_centers') if 'profit_centers' in context else False
+        if not profit_centers:
+            profit_centers = self._get_profit_centers()
+            context['profit_centers'] = profit_centers
         where_args = ['%s' for profit_center_id in context['profit_centers']]
         sql_start = """
                 SELECT account,
@@ -229,9 +235,9 @@ class ComparisonEncryptionReport(models.AbstractModel):
                            AAT.name    AS tag,
                            AAA.code    AS analytic_account,
                            AAA.name    AS analytic_account_name,
-                           AAA_EM.id   AS profit_center,                   
+                           AAA_EM.id   AS profit_center,
                            AAA_EM.name AS profit_center_name,
-                           AAA_EM.code AS profit_center_code, 
+                           AAA_EM.code AS profit_center_code,
                            0                       AS budget_balance,
                            EML.encryption / 100 * balance /
                             (CASE
@@ -304,8 +310,10 @@ class ComparisonEncryptionReport(models.AbstractModel):
 
     def _get_grouped_profit_center(self, options, line_id):
         context = dict(self._context or {})
-        profit_centers = context.get('profit_centers')
-
+        profit_centers = context.get('profit_centers') if 'profit_centers' in context else False
+        if not profit_centers:
+            profit_centers = self._get_profit_centers()
+            context['profit_centers'] = profit_centers
         accounts_per_profit_center = collections.OrderedDict(
             {pc_id: {'accounts': collections.OrderedDict()} for pc_id in profit_centers})
 
@@ -357,7 +365,7 @@ class ComparisonEncryptionReport(models.AbstractModel):
             SELECT AA.code     AS account,
                    AAA_EM.name AS profit_center_name,
                    0            AS budget_balance,
-                   EML.encryption / 100 * balance / (CASE WHEN AML.company_currency_id = 2 THEN 1 ELSE RCR.rate END) 
+                   EML.encryption / 100 * balance / (CASE WHEN AML.company_currency_id = 2 THEN 1 ELSE RCR.rate END)
                    AS balance
             FROM encryption_mapping_line EML
                      JOIN encryption_mapping EM ON (EML.encryption_mapping_id = EM.id)
@@ -380,8 +388,8 @@ class ComparisonEncryptionReport(models.AbstractModel):
                 AND AAA_EM.code = %s
         """
         sql = """
-            SELECT account, 
-                    profit_center_name, 
+            SELECT account,
+                    profit_center_name,
                     SUM(budget_balance) AS budget_balance,
                     SUM(balance) AS balance
                       FROM (

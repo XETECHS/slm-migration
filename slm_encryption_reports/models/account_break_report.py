@@ -932,9 +932,9 @@ class AccountBreakReport(models.AbstractModel):
                     results_by_code.update(results_by_code_regio)
 
                     for i, result in enumerate(results_vlr):
-                        formula = 'result = {}'.format(result['formula']).strip()
+                        # formula = 'result = {}'.format(result['formula']).strip()
                         try:
-                            safe_eval(formula, results_by_code, mode='exec', nocopy=True)
+                            # safe_eval(formula, results_by_code, mode='exec', nocopy=True)
                             results_by_code['B{}'.format(result['id'])] = results_by_code['result']
                             results_vlr[i]['balance'][ir] = results_by_code['result']
                         except ValueError:

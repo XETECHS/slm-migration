@@ -13,7 +13,7 @@ class BudgetBusinessUnitReport(models.AbstractModel):
     _description = "Business Unit Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
+    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': 'range'}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False
@@ -67,6 +67,12 @@ class BudgetBusinessUnitReport(models.AbstractModel):
 
     def _do_query(self, options, line_id, limit=False):
         context = dict(self._context or {})
+        business_units = []
+        if options.get('business_unit'):
+            business_units = [c.get('id') for c in options['business_unit'] if c.get('selected')]
+            business_units = business_units if len(business_units) > 0 else [c.get('id')
+                                                                             for c in options['business_unit']]
+        context['business_units'] = len(business_units) > 0 and business_units
 
         select_all = """
             SELECT id, profit_center, profit_center_id, name, sequence, formula, sum(balance) as balance, type
@@ -290,7 +296,12 @@ class BudgetBusinessUnitReport(models.AbstractModel):
         context = dict(self._context or {})
         results = self._do_query(options, line_id)
         overhead = self._do_query_overhead()
-
+        business_units = []
+        if options.get('business_unit'):
+            business_units = [c.get('id') for c in options['business_unit'] if c.get('selected')]
+            business_units = business_units if len(business_units) > 0 else [c.get('id')
+                                                                             for c in options['business_unit']]
+        context['business_units'] = len(business_units) > 0 and business_units
         for profit_center_id in context['business_units']:
             results_by_code = {'E{}'.format(result['id']): result['balance'] for result in results
                                if result['profit_center_id'] == profit_center_id}
