@@ -27,7 +27,7 @@ class ImportFile(models.Model):
     row_ids = fields.One2many('slm.import.file.row', 'import_file_id', string='Import File rows', copy=True)
     sheet_ids = fields.One2many('slm.import.file.sheet', 'import_file_id', string='Import File Sheets', copy=True)
     error_ids = fields.One2many('slm.import.file.error', 'import_file_id', string='Import File Errors', copy=True)
-    sheet_count = fields.Integer(compute=lambda self: len(self.sheet_ids))
+    sheet_count = fields.Integer(compute='compute_sheet')
     category_id = fields.Many2one('slm.import.file.category', string='Category', ondelete="cascade", index=True,
                                   required=True, auto_join=True)
     state = fields.Selection(
@@ -37,6 +37,11 @@ class ImportFile(models.Model):
                               required=True, auto_join=True, default=2)
     move_id = fields.Many2one('account.move', string='Journal Entry', ondelete="cascade", index=True,
                               required=False, auto_join=True)
+
+    @api.depends('sheet_ids')
+    def compute_sheet(self):
+        for rec in self:
+            rec.sheet_count = len(rec.sheet_ids)
 
     def name_get(self):
         return [
@@ -420,7 +425,7 @@ class ImportFile(models.Model):
         if self.state != 'error':
             self.update({'state': 'verified'})
 
-    def action_create(self, context, state='draft'):
+    def action_create(self, state='draft'):
         file_date = parse("{}{}01".format(self.year, self.month))
         last_file_date = self.last_day_of_month(file_date)
         amount = 0
@@ -437,12 +442,14 @@ class ImportFile(models.Model):
                     currency_id,
                     state,
                     company_id,
-                    amount,
-                    create_uid,create_date,write_uid,write_date) 
-                VALUES (%s,%s,%s,20,%s,%s,%s,%s,%s,now(),%s,now())
+                    amount_total,
+                    move_type,
+                    extract_state,
+                    create_uid,create_date,write_uid,write_date)
+                VALUES (%s,%s,%s,20,%s,%s,%s,%s,%s,%s,%s,now(),%s,now())
                 RETURNING id;
         """
-        params = (name, name, last_file_date, 2, state, self.company.id, amount, self.env.user.id, self.env.user.id,)
+        params = (name, name, last_file_date, 2, state, self.company.id, amount, 'entry', 'no_extract_requested', self.env.user.id, self.env.user.id,)
         self.env.cr.execute(insert_account_move, params)
         result = self.env.cr.dictfetchall()
         account_move_id = result[0]['id']
@@ -450,7 +457,7 @@ class ImportFile(models.Model):
             INSERT INTO
             account_move_line (
                 name,debit,credit,balance,amount_currency,company_currency_id,currency_id,account_id,move_id,ref,
-                journal_id,date_maturity,date,company_id,user_type_id,create_uid,create_date,write_uid,write_date,
+                journal_id,date_maturity,date,company_id,create_uid,create_date,write_uid,write_date,
                 vestcd,dagb,stuknr,regnr,boekjr,per,dag,mnd,jaar,faktnr,pnr,omschr,controlle,curcd,bedrag,bedrsrd,
                 bedrusd,opercde,vlnr,gallon,plcde,handl,maalt,pax,mandgn,sdatum,kstnpl6,kstnpl7,persnr,ponr,galprijs,
                 betrekdg,betrekmd,betrekjr,factdg,factmd,factjr,vltype,vltreg,partner_id,analytic_account_id)
@@ -472,7 +479,6 @@ class ImportFile(models.Model):
                 CONCAT(JAAR,LPAD(MND::text, 2, '0'),LPAD(DAG::text, 2, '0'))::DATE AS DATE_MATURITY,
                 CONCAT(JAAR,LPAD(MND::text, 2, '0'),LPAD(DAG::text, 2, '0'))::DATE AS DATE,
                 %s,
-                CASE WHEN BEDRUSD >= 0 THEN 7 ELSE 9 END AS USER_TYPE_ID,
                 2, now(), 2, now(), VESTCD, DAGB, STUKNR, REGNR, BOEKJR, PER, DAG, MND, JAAR, FAKTNR, PNR, OMSCHR, CONTROLE, CURCD, BEDRAG, BEDRSRD,
                 BEDRUSD, OPERCDE, fl.id AS VLNR, GALLON, PLCDE, HANDL, MAALT,PAX, MANDGN, SDATUM, AAA_CC6.id AS KSTNPL6, AAA_CC7.id AS KSTNPL7, PERSNR,
                 PONR, GALPRIJS, BETREKDG, BETREKMD, BETREKJR, FACTDG, FACTMD, FACTJR, VLTYPE, VLTREG,
@@ -491,14 +497,14 @@ class ImportFile(models.Model):
 
         params = (name, account_move_id, name, self.company.id, self.company.id, self.id)
         self.env.cr.execute(insert_account_move_line, params)
-
+        print ("account_move_id", account_move_id)
         self.update({
             'state': 'entry' if state == 'draft' else 'posted',
             'move_id': account_move_id
         })
 
-    def action_create_post(self, context):
-        self.action_create(context=context, state='posted')
+    def action_create_post(self):
+        self.action_create(state='posted')
 
     def action_post(self):
         self.move_id.update({'state': 'posted'})
