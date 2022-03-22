@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
         <!-- Sale order Inherit Form View to Modify it -->
         <record id="view_order_form_inherit_branch" model="ir.ui.view">
@@ -7,11 +7,12 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//sheet/notebook/page[@name='other_information']// group[@name='sale_reporting']"
-                       position="after">
+                <xpath expr="//page[@name='other_information']" position="inside">
                     <!-- Add your fields or attributes here -->
                     <group string="Branch" name="branch">
-                        <field name="branch_id"/>
+                        <group>
+                            <field name="branch_id"/>
+                        </group>
                     </group>
                 </xpath>
             </field>
@@ -28,5 +29,27 @@
                 </xpath>
             </field>
         </record>
+
+        <record id="sale_order_branch_view_tree" model="ir.ui.view" >
+            <field name="name">sale.order.inherit.tree</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_tree" />
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="branch_id" optional="hide"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="sale_order_branch_view_tree1" model="ir.ui.view" >
+            <field name="name">sale.order.inherit.tree1</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding" />
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="branch_id" optional="hide"/>
+                </field>
+            </field>
+        </record>
     </data>
-</openerp>
+</odoo>

@@ -9,10 +9,17 @@ class account_bank_statement_line(models.Model):
     _inherit = 'account.bank.statement.line'
 
     @api.model
-    def _get_bank_statement_default_branch(self):
-        user_pool = self.env['res.users']
-        branch_id = user_pool.browse(self.env.uid).branch_id.id or False
-        return branch_id
+    def default_get(self, default_fields):
+        res = super(account_bank_statement_line, self).default_get(default_fields)
+        branch_id = False
+        if self._context.get('branch_id'):
+            branch_id = self._context.get('branch_id')
+        elif self.env.user.branch_id:
+            branch_id = self.env.user.branch_id.id
+        res.update({
+            'branch_id' : branch_id
+        })
+        return res
 
-    branch_id = fields.Many2one(
-        'res.branch', 'Branch', default=_get_bank_statement_default_branch, readonly=False)
+    branch_id = fields.Many2one('res.branch', string='Branch')
+

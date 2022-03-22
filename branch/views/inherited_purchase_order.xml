@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
         <record id="purchase_order_form_inherit_branch" model="ir.ui.view">
             <field name="name">purchase.order.form.inherit.branch</field>
@@ -9,6 +9,9 @@
                 <field name="incoterm_id" position="after">
                         <field name="branch_id"/>
                 </field>
+                <xpath expr="//field[@name='order_line']" position="attributes">
+                    <attribute name="context">{'branch_id' : branch_id}</attribute>
+                </xpath>
             </field>
         </record>
 
@@ -22,5 +25,28 @@
                 </xpath>
             </field>
         </record>
+
+        <record id="purchase_order_branch_view_tree" model="ir.ui.view" >
+            <field name="name">purchase.order.inherit.tree</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_view_tree" />
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="branch_id" optional="hide"/>
+                </field>
+            </field>
+        </record>
+
+
+        <record id="purchase_order_branch_view_tree1" model="ir.ui.view" >
+            <field name="name">purchase.order.inherit.tree1</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_kpis_tree" />
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="branch_id" optional="hide"/>
+                </field>
+            </field>
+        </record>
     </data>
-</openerp>
+</odoo>

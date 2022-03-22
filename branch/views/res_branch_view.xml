@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>        
 
         <!-- Form View of branch-->
@@ -53,4 +53,4 @@
         <menuitem id="branch_menu_res_branch" name="Branch"  parent="base.menu_users" action="branch_action_res_branch" />
 
     </data>
-</openerp>
+</odoo>

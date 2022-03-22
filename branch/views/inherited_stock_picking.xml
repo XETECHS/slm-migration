@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
         <!-- Stock Picking Inherit Form View to Modify it -->
         <record id="view_picking_form_inherit_branch" model="ir.ui.view">
@@ -15,4 +15,4 @@
             </field>
         </record>
     </data>
-</openerp>
+</odoo>

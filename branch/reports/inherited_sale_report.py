@@ -11,3 +11,4 @@ class SaleReport(models.Model):
     def _query(self, with_clause='', fields={}, groupby='', from_clause=''):
         fields['branch_id'] = ", s.branch_id as branch_id"
         return super(SaleReport, self)._query(with_clause, fields, groupby, from_clause)
+
