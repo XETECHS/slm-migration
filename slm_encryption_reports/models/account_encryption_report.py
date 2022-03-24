@@ -13,8 +13,7 @@ class AccountEncryptionReport(models.AbstractModel):
     _description = "Encryption Report"
     _inherit = "account.report"
 
-    filter_date = {'date_from': '', 'date_to': '',
-                   'mode': '', 'filter': 'this_month'}
+    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': 'range'}
     filter_comparison = None
     filter_cash_basis = False
     filter_all_entries = False

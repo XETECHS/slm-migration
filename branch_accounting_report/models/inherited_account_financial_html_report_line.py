@@ -1,222 +1,301 @@
 # -*- coding: utf-8 -*-
 # Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
 
-from odoo import models, fields, api, _
-from odoo.tools import ustr, float_is_zero
+from odoo import models, fields, _
+from odoo.tools import ustr
 import ast
 from odoo.tools.safe_eval import safe_eval
 
 
-class ReportAccountFinancialReport(models.Model):
-    _inherit = "account.financial.html.report"
-    
-    filter_branch = True
+class FormulaLine(object):
+    def __init__(self, obj, currency_table, financial_report, type='balance', linesDict=None):
+        if linesDict is None:
+            linesDict = {}
+        fields = dict((fn, 0.0) for fn in ['debit', 'credit', 'balance'])
+        if type == 'balance':
+            fields = obj._get_balance(
+                linesDict, currency_table, financial_report)[0]
+            linesDict[obj.code] = self
+        elif type in ['sum', 'sum_if_pos', 'sum_if_neg']:
+            if type == 'sum_if_neg':
+                obj = obj.with_context(sum_if_neg=True)
+            if type == 'sum_if_pos':
+                obj = obj.with_context(sum_if_pos=True)
+            if obj._name == 'account.financial.html.report.line':
+                fields = obj._get_sum(currency_table, financial_report)
+                self.amount_residual = fields['amount_residual']
+            elif obj._name == 'account.move.line':
+                self.amount_residual = 0.0
+                field_names = ['debit', 'credit', 'balance', 'amount_residual']
+                res = obj.env['account.financial.html.report.line']._compute_line(
+                    currency_table, financial_report)
+                for field in field_names:
+                    fields[field] = res[field]
+                self.amount_residual = fields['amount_residual']
+        elif type == 'not_computed':
+            for field in fields:
+                fields[field] = obj.get(field, 0)
+            self.amount_residual = obj.get('amount_residual', 0)
+        elif type == 'null':
+            self.amount_residual = 0.0
+        self.balance = fields['balance']
+        self.credit = fields['credit']
+        self.debit = fields['debit']
+
+
+class FormulaContext(dict):
+    def __init__(self, reportLineObj, linesDict, currency_table, financial_report, curObj=None, only_sum=False, *data):
+        self.reportLineObj = reportLineObj
+        self.curObj = curObj
+        self.linesDict = linesDict
+        self.currency_table = currency_table
+        self.only_sum = only_sum
+        self.financial_report = financial_report
+        return super(FormulaContext, self).__init__(data)
+
+    def __getitem__(self, item):
+        formula_items = ['sum', 'sum_if_pos', 'sum_if_neg']
+        if item in set(__builtins__.keys()) - set(formula_items):
+            return super(FormulaContext, self).__getitem__(item)
+
+        if self.only_sum and item not in formula_items:
+            return FormulaLine(self.curObj, self.currency_table, self.financial_report, type='null')
+        if self.get(item):
+            return super(FormulaContext, self).__getitem__(item)
+        if self.linesDict.get(item):
+            return self.linesDict[item]
+        if item == 'sum':
+            res = FormulaLine(self.curObj, self.currency_table,
+                              self.financial_report, type='sum')
+            self['sum'] = res
+            return res
+        if item == 'sum_if_pos':
+            res = FormulaLine(self.curObj, self.currency_table,
+                              self.financial_report, type='sum_if_pos')
+            self['sum_if_pos'] = res
+            return res
+        if item == 'sum_if_neg':
+            res = FormulaLine(self.curObj, self.currency_table,
+                              self.financial_report, type='sum_if_neg')
+            self['sum_if_neg'] = res
+            return res
+        if item == 'NDays':
+            d1 = fields.Date.from_string(self.curObj.env.context['date_from'])
+            d2 = fields.Date.from_string(self.curObj.env.context['date_to'])
+            res = (d2 - d1).days
+            self['NDays'] = res
+            return res
+        if item == 'count_rows':
+            return self.curObj._get_rows_count()
+        if item == 'from_context':
+            return self.curObj._get_value_from_context()
+        line_id = self.reportLineObj.search([('code', '=', item)], limit=1)
+        if line_id:
+            date_from, date_to, strict_range = line_id._compute_date_range()
+            res = FormulaLine(line_id.with_context(strict_range=strict_range, date_from=date_from,
+                                                   date_to=date_to), self.currency_table, self.financial_report, linesDict=self.linesDict)
+            self.linesDict[item] = res
+            return res
+        return super(FormulaContext, self).__getitem__(item)
 
 
 class AccountFinancialReportLine(models.Model):
     _inherit = "account.financial.html.report.line"
 
-    filter_branch = True
+    def _compute_line(self, currency_table, financial_report, group_by=None, domain=[]):
+        """ Computes the sum that appeas on report lines when they aren't unfolded. It is using _query_get() function
+            of account.move.line which is based on the context, and an additional domain (the field domain on the report
+            line) to build the query that will be used.
 
-    def _compute_sum(self, options_list, calling_financial_report):
-        ''' Compute the values to be used inside the formula for the current line.
-        If called, it means the current line formula contains something making its line a leaf ('sum' or 'count_rows')
-        for example.
+            @param currency_table: dictionary containing the foreign currencies (key) and their factor (value)
+                compared to the current user's company currency
+            @param financial_report: browse_record of the financial report we are willing to compute the lines for
+            @param group_by: used in case of conditionnal sums on the report line
+            @param domain: domain on the report line to consider in the query_get() call
 
-        The results is something like:
-        {
-            'sum':                  {key: <balance>...},
-            'sum_if_pos':           {key: <balance>...},
-            'sum_if_pos_groupby':   {key: <balance>...},
-            'sum_if_neg':           {key: <balance>...},
-            'sum_if_neg_groupby':   {key: <balance>...},
-            'count_rows':           {period_index: <number_of_rows_in_period>...},
-        }
+            @returns : a dictionnary that has for each aml in the domain a dictionnary of the values of the fields
+        """
+        domain = domain and ast.literal_eval(ustr(domain))
+        for index, condition in enumerate(domain):
+            if condition[0].startswith('tax_ids.'):
+                new_condition = (condition[0].partition(
+                    '.')[2], condition[1], condition[2])
+                taxes = self.env['account.tax'].with_context(
+                    active_test=False).search([new_condition])
+                domain[index] = ('tax_ids', 'in', taxes.ids)
+        tables, where_clause, where_params = self.env['account.move.line']._query_get(
+            domain=self._get_aml_domain())
+        JOIN_CURRENCY = """
+             LEFT JOIN res_currency_rate RCR ON (account_move_line.company_currency_id = RCR.currency_id
+                                             AND RCR.name = date_trunc('month', account_move_line.date) :: date)
+        """
+        tables = tables + JOIN_CURRENCY
+        if financial_report.tax_report:
+            where_clause += ''' AND "account_move_line".tax_exigible = 't' '''
 
-        ... where:
-        'period_index' is the number of the period, 0 being the current one, others being comparisons.
+        line = self
+        financial_report = False
 
-        'key' is a composite key containing the period_index and the additional group by enabled on the financial report.
-        For example, suppose a group by 'partner_id':
+        while (not financial_report):
+            financial_report = line.financial_report_id
+            if not line.parent_id:
+                break
+            line = line.parent_id
 
-        The keys could be something like (0,1), (1,2), (1,3), meaning:
-        * (0,1): At the period 0, the results for 'partner_id = 1' are...
-        * (1,2): At the period 1 (first comparison), the results for 'partner_id = 2' are...
-        * (1,3): At the period 1 (first comparison), the results for 'partner_id = 3' are...
+        sql, params = self._get_with_statement(financial_report)
+        select, select_params = self._query_get_select_sum(currency_table)
+        where_params = params + select_params + where_params
 
-        :param options_list:                The report options list, first one being the current dates range, others
-                                            being the comparisons.
-        :param calling_financial_report:    The financial report called by the user to be rendered.
-        :return:                            A python dictionary.
-        '''
-        self.ensure_one()
-        params = []
-        queries = []
+        if (self.env.context.get('sum_if_pos') or self.env.context.get('sum_if_neg')) and group_by:
+            sql = sql + "SELECT account_move_line." + group_by + " as " + group_by + "," + select + \
+                " FROM " + tables + " WHERE " + where_clause + \
+                " GROUP BY account_move_line." + group_by
+            self.env.cr.execute(sql, where_params)
+            res = {'balance': 0, 'debit': 0, 'credit': 0, 'amount_residual': 0}
+            for row in self.env.cr.dictfetchall():
+                if (row['balance'] > 0 and self.env.context.get('sum_if_pos')) or (
+                        row['balance'] < 0 and self.env.context.get('sum_if_neg')):
+                    for field in ['debit', 'credit', 'balance', 'amount_residual']:
+                        res[field] += row[field]
+            res['currency_id'] = self.env.user.company_id.currency_id.id
+            return res
 
-        AccountFinancialReportHtml = self.financial_report_id
-        groupby_list = AccountFinancialReportHtml._get_options_groupby_fields(options_list[0])
-        all_groupby_list = groupby_list.copy()
-        groupby_in_formula = any(x in (self.formulas or '') for x in ('sum_if_pos_groupby', 'sum_if_neg_groupby'))
-        if groupby_in_formula and self.groupby and self.groupby not in all_groupby_list:
-            all_groupby_list.append(self.groupby)
-        groupby_clause = ','.join('account_move_line.%s' % gb for gb in all_groupby_list)
+        if self._context.get('branch'):
+            where_clause += 'and ("account_move_line"."branch_id" in ('
+            for a in range(len(self._context.get('branch'))):
+                where_clause += '%s,'
+            where_clause = where_clause[:-1]
 
-        ct_query = self.env['res.currency']._get_query_currency_table(options_list[0])
-        parent_financial_report = self._get_financial_report()
+            where_clause += '))'
+            # branch_list = [1,2]
+            for a in self._context.get('branch'):
+                where_params.append(int(a))
 
-        # Prepare a query by period as the date is different for each comparison.
-
-        for i, options in enumerate(options_list):
-            new_options = self._get_options_financial_line(options, calling_financial_report, parent_financial_report)
-            line_domain = self._get_domain(new_options, parent_financial_report)
-
-            tables, where_clause, where_params = AccountFinancialReportHtml._query_get(new_options, domain=line_domain)
-
-            if options.get('branch_ids'):
-                where_clause += 'and ("account_move_line"."branch_id" in ('
-                for a in range(len(options.get('branch_ids'))):
-                    where_clause +='%s,'
-                where_clause = where_clause[:-1]
-                where_clause += '))'
-                    
-                for a in options.get('branch_ids'):
-                    where_params.append(int(a))
-
-            queries.append('''
-                SELECT
-                    ''' + (groupby_clause and '%s,' % groupby_clause) + ''' %s AS period_index,
-                    COUNT(DISTINCT account_move_line.''' + (self.groupby or 'id') + ''') AS count_rows,
-                    COALESCE(SUM(ROUND(account_move_line.balance * currency_table.rate, currency_table.precision)), 0.0) AS balance
-                FROM ''' + tables + '''
-                JOIN ''' + ct_query + ''' ON currency_table.company_id = account_move_line.company_id
-                WHERE ''' + where_clause + '''
-                ''' + (groupby_clause and 'GROUP BY %s' % groupby_clause) + '''
-            ''')
-            params.append(i)
-            params += where_params
-
-        # Fetch the results.
-
-        results = {
-            'sum': {},
-            'sum_if_pos': {},
-            'sum_if_pos_groupby': {},
-            'sum_if_neg': {},
-            'sum_if_neg_groupby': {},
-            'count_rows': {},
-        }
-
-        self._cr.execute(' UNION ALL '.join(queries), params)
-        for res in self._cr.dictfetchall():
-            # Build the key.
-            key = [res['period_index']]
-            for gb in groupby_list:
-                key.append(res[gb])
-            key = tuple(key)
-
-            # Compute values.
-            results['count_rows'].setdefault(res['period_index'], 0)
-            results['count_rows'][res['period_index']] += res['count_rows']
-            results['sum'][key] = res['balance']
-            if results['sum'][key] > 0:
-                results['sum_if_pos'][key] = results['sum'][key]
-                results['sum_if_pos_groupby'].setdefault(key, 0.0)
-                results['sum_if_pos_groupby'][key] += res['balance']
-            if results['sum'][key] < 0:
-                results['sum_if_neg'][key] = results['sum'][key]
-                results['sum_if_neg_groupby'].setdefault(key, 0.0)
-                results['sum_if_neg_groupby'][key] += res['balance']
-
+        sql = sql + "SELECT " + select + " FROM " + tables + " WHERE " + where_clause
+        self.env.cr.execute(sql, where_params)
+        results = self.env.cr.dictfetchall()[0]
+        results['currency_id'] = self.env.user.company_id.currency_id.id
         return results
 
-    def _compute_amls_results(self, options_list, calling_financial_report, sign=1):
-        ''' Compute the results for the unfolded lines by taking care about the line order and the group by filter.
+    def _eval_formula(self, financial_report, debit_credit, currency_table, linesDict_per_group, groups=False):
+        groups = groups or {'fields': [], 'ids': [()]}
+        debit_credit = debit_credit and financial_report.debit_credit
+        formulas = self._split_formulas()
+        currency = self.env.user.company_id.currency_id
 
-        Suppose the line has '-sum' as formulas with 'partner_id' in groupby and 'currency_id' in group by filter.
-        The result will be something like:
-        [
-            (0, 'partner 0', {(0,1): amount1, (0,2): amount2, (1,1): amount3}),
-            (1, 'partner 1', {(0,1): amount4, (0,2): amount5, (1,1): amount6}),
-            ...               |
-        ]    |                |
-             |__ res.partner ids
-                              |_ key where the first element is the period number, the second one being a res.currency id.
+        line_res_per_group = []
 
-        :param options_list:                The report options list, first one being the current dates range, others
-                                            being the comparisons.
-        :param calling_financial_report:    The financial report called by the user to be rendered.
-        :param sign:                        1 or -1 to get negative values in case of '-sum' formula.
-        :return:                            A list (groupby_key, display_name, {key: <balance>...}).
-        '''
-        self.ensure_one()
-        params = []
-        queries = []
+        if not groups['ids']:
+            return [{'line': {'balance': 0.0}}]
 
-        AccountFinancialReportHtml = self.financial_report_id
-        horizontal_groupby_list = AccountFinancialReportHtml._get_options_groupby_fields(options_list[0])
-        groupby_list = [self.groupby] + horizontal_groupby_list
-        groupby_clause = ','.join('account_move_line.%s' % gb for gb in groupby_list)
-        groupby_field = self.env['account.move.line']._fields[self.groupby]
+        # this computes the results of the line itself
+        for group_index, group in enumerate(groups['ids']):
+            self_for_group = self.with_context(
+                group_domain=self._get_group_domain(group, groups))
+            linesDict = linesDict_per_group[group_index]
+            line = False
 
-        ct_query = self.env['res.currency']._get_query_currency_table(options_list[0])
-        parent_financial_report = self._get_financial_report()
+            if self.code and self.code in linesDict:
+                line = linesDict[self.code]
+            elif formulas and formulas['balance'].strip() == 'count_rows' and self.groupby:
+                line_res_per_group.append(
+                    {'line': {'balance': self_for_group._get_rows_count()}})
+            elif formulas and formulas['balance'].strip() == 'from_context':
+                line_res_per_group.append(
+                    {'line': {'balance': self_for_group._get_value_from_context()}})
+            else:
+                line = FormulaLine(self_for_group, currency_table,
+                                   financial_report, linesDict=linesDict)
 
-        # Prepare a query by period as the date is different for each comparison.
+            if line:
+                res = {}
+                res['balance'] = line.balance
+                res['balance'] = currency.round(line.balance)
+                if debit_credit:
+                    res['credit'] = currency.round(line.credit)
+                    res['debit'] = currency.round(line.debit)
+                line_res_per_group.append(res)
 
-        for i, options in enumerate(options_list):
-            new_options = self._get_options_financial_line(options, calling_financial_report, parent_financial_report)
-            line_domain = self._get_domain(new_options, parent_financial_report)
+        # don't need any groupby lines for count_rows and from_context formulas
+        if all('line' in val for val in line_res_per_group):
+            return line_res_per_group
 
-            tables, where_clause, where_params = AccountFinancialReportHtml._query_get(new_options, domain=line_domain)
+        columns = []
+        # this computes children lines in case the groupby field is set
+        if self.domain and self.groupby and self.show_domain != 'never':
+            if self.groupby not in self.env['account.move.line']:
+                raise ValueError(
+                    _('Groupby should be a field from account.move.line'))
 
-            if self._context.get('branch_ids'):
+            groupby = [self.groupby or 'id']
+            if groups:
+                groupby = groups['fields'] + groupby
+            groupby = ', '.join(['"account_move_line".%s' %
+                                 field for field in groupby])
+
+            aml_obj = self.env['account.move.line']
+            tables, where_clause, where_params = aml_obj._query_get(
+                domain=self._get_aml_domain())
+            JOIN_CURRENCY = """
+                        LEFT JOIN res_currency_rate RCR ON (account_move_line.company_currency_id = RCR.currency_id
+                                                        AND RCR.name = date_trunc('month', account_move_line.date) :: date)
+                   """
+            tables = tables + JOIN_CURRENCY
+            sql, params = self._get_with_statement(financial_report)
+            if financial_report.tax_report:
+                where_clause += ''' AND "account_move_line".tax_exigible = 't' '''
+            if self._context.get('branch'):
                 where_clause += 'and ("account_move_line"."branch_id" in ('
-                branch_ids = self._context.get('branch_ids')
-                for a in branch_ids:
-                    where_clause +='%s,'
+                for a in range(len(self._context.get('branch'))):
+                    where_clause += '%s,'
                 where_clause = where_clause[:-1]
-                where_clause += '))'
-                
 
-                for a in branch_ids:
+                where_clause += '))'
+                # branch_list = [1,2]
+                for a in self._context.get('branch'):
                     where_params.append(int(a))
 
+            select, select_params = self._query_get_select_sum(currency_table)
+            params += select_params
+            sql = sql + "SELECT " + groupby + ", " + select + " FROM " + tables + \
+                " WHERE " + where_clause + " GROUP BY " + groupby + " ORDER BY " + groupby
 
-            queries.append('''
-                SELECT
-                    ''' + (groupby_clause and '%s,' % groupby_clause) + '''
-                    %s AS period_index,
-                    COALESCE(SUM(ROUND(%s * account_move_line.balance * currency_table.rate, currency_table.precision)), 0.0) AS balance
-                FROM ''' + tables + '''
-                JOIN ''' + ct_query + ''' ON currency_table.company_id = account_move_line.company_id
-                WHERE ''' + where_clause + '''
-                ''' + (groupby_clause and 'GROUP BY %s' % groupby_clause) + '''
-            ''')
-            params += [i, sign] + where_params
+            params += where_params
+            self.env.cr.execute(sql, params)
+            results = self.env.cr.fetchall()
+            for group_index, group in enumerate(groups['ids']):
+                linesDict = linesDict_per_group[group_index]
+                results_for_group = [
+                    result for result in results if group == result[:len(group)]]
+                if results_for_group:
+                    results_for_group = [r[len(group):]
+                                         for r in results_for_group]
+                    results_for_group = dict(
+                        [(k[0], {'balance': k[1], 'amount_residual': k[2], 'debit': k[3], 'credit': k[4]}) for k in results_for_group])
+                    c = FormulaContext(self.env['account.financial.html.report.line'].with_context(group_domain=self._get_group_domain(group, groups)),
+                                       linesDict, currency_table, financial_report, only_sum=True)
+                    if formulas:
+                        for key in results_for_group:
+                            c['sum'] = FormulaLine(
+                                results_for_group[key], currency_table, financial_report, type='not_computed')
+                            c['sum_if_pos'] = FormulaLine(results_for_group[key]['balance'] >= 0.0 and results_for_group[key] or {'balance': 0.0},
+                                                          currency_table, financial_report, type='not_computed')
+                            c['sum_if_neg'] = FormulaLine(results_for_group[key]['balance'] <= 0.0 and results_for_group[key] or {'balance': 0.0},
+                                                          currency_table, financial_report, type='not_computed')
+                            for col, formula in formulas.items():
+                                if col in results_for_group[key]:
+                                    results_for_group[key][col] = safe_eval(
+                                        formula, c, nocopy=True)
+                    to_del = []
+                    for key in results_for_group:
+                        if self.env.user.company_id.currency_id.is_zero(results_for_group[key]['balance']):
+                            to_del.append(key)
+                    for key in to_del:
+                        del results_for_group[key]
+                    results_for_group.update(
+                        {'line': line_res_per_group[group_index]})
+                    columns.append(results_for_group)
+                else:
+                    columns.append({'line': {'balance': 0.0}})
 
-        # Fetch the results.
-        # /!\ Take care of both vertical and horizontal group by clauses.
-
-        results = {}
-
-        self._cr.execute(' UNION ALL '.join(queries), params)
-        for res in self._cr.dictfetchall():
-            # Build the key.
-            key = [res['period_index']]
-            for gb in horizontal_groupby_list:
-                key.append(res[gb])
-            key = tuple(key)
-
-            results.setdefault(res[self.groupby], {})
-            results[res[self.groupby]][key] = res['balance']
-
-        # Sort the lines according to the vertical groupby and compute their display name.
-        if groupby_field.relational:
-            # Preserve the table order by using search instead of browse.
-            sorted_records = self.env[groupby_field.comodel_name].search([('id', 'in', tuple(results.keys()))])
-            sorted_values = sorted_records.name_get()
-        else:
-            # Sort the keys in a lexicographic order.
-            sorted_values = [(v, v) for v in sorted(list(results.keys()))]
-
-        return [(groupby_key, display_name, results[groupby_key]) for groupby_key, display_name in sorted_values]
+        return columns or [{'line': res} for res in line_res_per_group]

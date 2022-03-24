@@ -13,7 +13,7 @@ class AccountGeneralLedgerReport(models.AbstractModel):
     _description = "General Ledger Report"
     # _inherit = "account.report"
 
-    # filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': ''}
+    filter_date = {'date_from': '', 'date_to': '', 'filter': 'this_month', 'mode': 'range'}
     filter_cash_basis = False
     filter_all_entries = False
     filter_journals = True
