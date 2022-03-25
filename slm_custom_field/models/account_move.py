@@ -82,7 +82,7 @@ class AccountMoveLine(models.Model):
                     record.required_analytic_account = False
                 analytic_accounts = MandatoryAnalyticAccount.search_mandatory_accounts(
                     code, self.env.cr)
-                record.account_analytic_id = None
+                record.analytic_account_id = None
                 if analytic_accounts:
                     res = {
                         'domain': {'analytic_account_id': [('id', 'in', analytic_accounts)]}

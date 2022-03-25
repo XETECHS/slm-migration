@@ -5,7 +5,7 @@ from .mandatory_analytic_account import MandatoryAnalyticAccount
 
 
 class AccountInvoiceLine(models.Model):
-    _inherit = "account.invoice.line"
+    _inherit = "account.move.line"
 
     required_flight_number = fields.Boolean('Is the fligh number required? (internal field)',
                                             compute='_is_flight_number_required')
@@ -32,11 +32,11 @@ class AccountInvoiceLine(models.Model):
                     }
                 return res
 
-    @api.depends('account_analytic_id', 'account_id')
+    @api.depends('analytic_account_id', 'account_id')
     def _is_flight_number_required(self):
         for record in self:
-            if record.account_id and record.account_analytic_id:
+            if record.account_id and record.analytic_account_id:
                 if MandatoryAnalyticAccount.check_required_fligh_number(record.account_id.code,
-                                                                        record.account_analytic_id.id,
+                                                                        record.analytic_account_id.id,
                                                                         self.env.cr):
                     record.required_flight_number = True
