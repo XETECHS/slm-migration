@@ -87,7 +87,6 @@ class ImportFile(models.Model):
 
         return res
 
-    
     def write(self, values):
         res = super(ImportFile, self).write(values)
         return res
@@ -109,7 +108,6 @@ class ImportFile(models.Model):
                 skip_header = True
                 counter = 1
                 sheet = wb.sheet_by_name(sheet_dict['name'])
-                sheet_id = sheet_dict['id']
                 for row in range(sheet.nrows):
                     try:
                         if skip_header:
@@ -126,16 +124,13 @@ class ImportFile(models.Model):
                         file_date = parse("{}{}01".format(year, month))
                         last_file_date = self.last_day_of_month(file_date)
 
-                        if not row_dict['mnd'] or not (isinstance(row_dict['mnd'], int)
-                                                       or isinstance(row_dict['mnd'], float)):
+                        if not row_dict['mnd'] or not (isinstance(row_dict['mnd'], int) or isinstance(row_dict['mnd'], float)):
                             row_dict['mnd'] = last_file_date.month
                             row_dict['dag'] = last_file_date.day
                             row_dict['jaar'] = last_file_date.year
-                        elif not row_dict['jaar'] or not (isinstance(row_dict['jaar'], int)
-                                                          or isinstance(row_dict['jaar'], float)):
+                        elif not row_dict['jaar'] or not (isinstance(row_dict['jaar'], int) or isinstance(row_dict['jaar'], float)):
                             row_dict['jaar'] = last_file_date.year
-                        elif not row_dict['dag'] or not (isinstance(row_dict['mnd'], int)
-                                                         or isinstance(row_dict['mnd'], float)):
+                        elif not row_dict['dag'] or not (isinstance(row_dict['mnd'], int) or isinstance(row_dict['mnd'], float)):
                             row_date = parse("{}{:02d}01".format(row_dict['jaar'], row_dict['mnd']))
                             last_row_date = self.last_day_of_month(row_date)
                             row_dict['dag'] = last_row_date.day
@@ -194,8 +189,7 @@ class ImportFile(models.Model):
                   FROM slm_import_file_row SIFR
                            JOIN res_currency RC ON (RC.currency_code = SIFR.curcd::VARCHAR)
                            LEFT JOIN res_currency_rate RCR ON
-                      (RC.id = RCR.currency_id AND
-                       RCR.name = date_trunc('month', CONCAT(jaar, LPAD(mnd::text, 2, '0'), 
+                      (RC.id = RCR.currency_id AND RCR.name = date_trunc('month', CONCAT(jaar, LPAD(mnd::text, 2, '0'),
                         LPAD(dag::text, 2, '0'))::DATE)::date)
                   WHERE SIFR.import_file_id = %s) AS T
             WHERE T.id = slm_import_file_row.id
@@ -266,7 +260,7 @@ class ImportFile(models.Model):
 
     def _get_errors(self, res):
         query_mandatory_analytic_accounts = """
-            SELECT SIFR.id AS row_id, SIFR.sheet_id, SIFR.number, AAM.id as mandatory_id, 
+            SELECT SIFR.id AS row_id, SIFR.sheet_id, SIFR.number, AAM.id as mandatory_id,
                 string_agg(AAA_MANDATORY.code, ',') as "mandatory_accounts"
             FROM slm_import_file SIF
                 JOIN slm_import_file_row SIFR ON (SIFR.import_file_id = SIF.id)
@@ -276,7 +270,7 @@ class ImportFile(models.Model):
             JOIN account_analytic_account_account_analytic_mandatory_rel AAAAAMR ON (AAM.id = AAAAAMR.account_analytic_mandatory_id)
             JOIN account_analytic_account AAA_MANDATORY ON (AAA_MANDATORY.id = AAAAAMR.account_analytic_account_id)
             WHERE SIF.id = %s
-            AND AAA.id NOT IN (SELECT account_analytic_account_id 
+            AND AAA.id NOT IN (SELECT account_analytic_account_id
                                 FROM account_analytic_account_account_analytic_mandatory_rel
                                 WHERE account_analytic_mandatory_id = AAM.id)
             GROUP BY SIFR.grootb, SIFR.vlnr, SIFR.kstnpl, AAM.id, SIFR.id, SIF.id;
@@ -286,7 +280,7 @@ class ImportFile(models.Model):
         mandatory_results = self.env.cr.dictfetchall()
 
         query_mandatory_vlnr = """
-            SELECT DISTINCT SIFR.id AS row_id, SIFR.sheet_id, SIFR.number, AAM.id AS mandatory_id  
+            SELECT DISTINCT SIFR.id AS row_id, SIFR.sheet_id, SIFR.number, AAM.id AS mandatory_id
             FROM slm_import_file SIF
                 JOIN slm_import_file_row SIFR ON (SIFR.import_file_id = SIF.id)
             JOIN account_account AA ON (AA.code = SIFR.grootb)
@@ -331,8 +325,8 @@ class ImportFile(models.Model):
                 FROM slm_import_file SIF
                 JOIN slm_import_file_row SIFR ON (SIFR.import_file_id = SIF.id)
                 LEFT JOIN res_partner RP on SIFR.cred = RP.name
-                WHERE SIF.id = %s 
-                    AND SIFR.cred IS NOT NULL 
+                WHERE SIF.id = %s
+                    AND SIFR.cred IS NOT NULL
                     AND RP.id IS NULL
         """
         self.env.cr.execute(query_cred, (res.id,))
@@ -343,8 +337,8 @@ class ImportFile(models.Model):
                         FROM slm_import_file SIF
                         JOIN slm_import_file_row SIFR ON (SIFR.import_file_id = SIF.id)
                         LEFT JOIN res_partner RP on SIFR.deb = RP.name
-                        WHERE SIF.id = %s 
-                            AND SIFR.deb IS NOT NULL 
+                        WHERE SIF.id = %s
+                            AND SIFR.deb IS NOT NULL
                             AND RP.id IS NULL
                 """
         self.env.cr.execute(query_deb, (res.id,))
@@ -395,13 +389,11 @@ class ImportFile(models.Model):
         return errors_ids
 
     def _get_balance(self, id):
-        query = """
-            SELECT SUM(amount) AS balance FROM slm_import_file_row
-            WHERE import_file_id = %s
-        """
-        self.env.cr.execute(query, (id,))
+        query = """SELECT SUM(amount) AS balance FROM slm_import_file_row WHERE import_file_id = %s""" % id
+        self.env.cr.execute(query)
         results = self.env.cr.dictfetchall()
-        return round(results[0]['balance'], 5)
+        balance = results[0]['balance'] and results[0]['balance'] or 0.0
+        return balance
 
     def action_balance(self):
         balance = self._get_balance(self.id)
