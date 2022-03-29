@@ -30,10 +30,10 @@ class Payment(models.Model):
 	def default_get(self, fields):
 		rec = super(Payment, self).default_get(fields)
 		active_ids = self._context.get('active_ids')
-		invoices = self.env['account.invoice'].browse(active_ids)
+		invoices = self.env['account.move'].browse(active_ids)
 		rec.update({
 			'journal_id': False,
-			'invoice_number': ' '.join([ref for ref in invoices.mapped('move_name') if ref]),
+			'invoice_number': ' '.join([ref for ref in invoices.mapped('name') if ref]),
 		})
 		return rec
 Payment()
