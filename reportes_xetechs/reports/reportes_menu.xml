@@ -2,7 +2,7 @@
 <odoo>
     <!-- Invoices QWEB-->
     <record id="action_reportes_xetechs_invoice_pdf" model="ir.actions.report">
-        <field name="name">Invoices</field>
+        <field name="name">Invoice Branches</field>
         <field name="model">account.move</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">reportes_xetechs.reportes_xetechs_invoice_pdf</field>
