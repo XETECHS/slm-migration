@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+slm_import_utils.access_slm_edgard,access_slm_edgard,slm_import_utils.model_slm_edgard,base.group_user,1,1,1,1

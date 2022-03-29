@@ -32,7 +32,7 @@
     'maintainer': 'XETECHS, S.A.',
     'website': 'https://www.xetechs.com',
     'category': 'account',
-    'depends': ['base', 'account'],
+    'depends': ['base', 'account', 'slm_custom_field'],
     'license': 'AGPL-3',
 
     # always loaded
