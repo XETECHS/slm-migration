@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 	
-	<menuitem id="menu_data_import" name="Data import from SLM" parent="account.menu_finance_entries" sequence="10" groups="account.group_account_user"/>
+	<menuitem id="menu_data_import" name="Data import" parent="account_accountant.menu_accounting" sequence="10" groups="account.group_account_user"/>
 
 	<record id="wizard_data_import_edgar_form" model="ir.ui.view">
 		<field name="name">wizard.data.import.form</field>
@@ -32,26 +32,56 @@
 		</field>
 	</record>
 
+
+	<!-- <record id="action_data_import_edgar" model="ir.actions.act_window">
+            <field name="name">Data Import from SLM</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.data.import</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="model_wizard_data_import" />
+            <field name="binding_view_types">list</field>
+        </record> -->
+
 	<record id="action_data_import_edgar" model="ir.actions.act_window">
 		<field name="name">Data Import from SLM</field>
 		<field name="res_model">wizard.data.import</field>
 		<field name="type">ir.actions.act_window</field>
 		
 		<field name="view_mode">form</field>
-		<field name="view_id" ref="wizard_data_import_edgar_form"/>
 		<field name="context">{'default_type_transactions': 'edgar_app'}</field>
 		<field name="target">new</field>
 	</record>
+	<!-- <menuitem id="submenu_data_import_edgar"
+                  action="action_data_import_edgar"
+                  parent="account.menu_finance_entries"
+                  sequence="102"
+                  name="Data Import from SLM"
+                  
+
+        /> -->
 
 	<menuitem action="action_data_import_edgar" id="submenu_data_import_edgar" parent="slm_import_data.menu_data_import"/>
 	
+
+	<record id="action_delete_data_import_edgar" model="ir.actions.act_window">
+            <field name="name">Delete data from SLM</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.data.import</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <!-- TODO: check if we need this -->
+            <field name="binding_model_id" ref="model_wizard_data_import" />
+            <field name="binding_view_types">list</field>
+        </record>
+
 	<record id="action_delete_data_import_edgar" model="ir.actions.act_window">
 		<field name="name">Delete data from SLM</field>
 		<field name="res_model">wizard.data.import</field>
 		<field name="type">ir.actions.act_window</field>
 		
 		<field name="view_mode">form</field>
-		<field name="view_id" ref="wizard_data_import_edgar_form"/>
+		<!-- <field name="view_id" ref="wizard_data_import_edgar_form"/> -->
 		<field name="context">{'default_type_transactions': 'delete_table'}</field>
 		<field name="target">new</field>
 	</record>

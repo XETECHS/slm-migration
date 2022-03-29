@@ -5,10 +5,11 @@ from odoo import models, fields, api
 # class slm_import_utils(models.Model):
 #     _name = 'slm_import_utils.slm_import_utils'
 
+
 class SlmData(models.Model):
     _name = 'slm_edgard'
     _description = 'Table for import data'
-    
+
     company_id = fields.Text(string="", required=False, )
     day_book = fields.Text(string="", required=False, )
     piece_number = fields.Text(string="", required=False, )

@@ -34,9 +34,10 @@ Import Data
     'maintainer': 'XETECHS, S.A.',
     'website': 'https://www.xetechs.com',
     'category': 'account',
-    'depends': ['base', 'account', 'slm_dbtable_adapt'],
+    'depends': ['base', 'account', 'slm_dbtable_adapt', 'account_accountant', 'slm_import_utils'],
     'license': 'AGPL-3',
     'data': [
+            'security/ir.model.access.csv',
             'wizard/wizard_import_data_view.xml',
             'views/cron_views.xml',
             # 'views/reports.xml',
