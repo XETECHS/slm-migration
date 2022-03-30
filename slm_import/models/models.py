@@ -92,8 +92,9 @@ class ImportFile(models.Model):
         return res
 
     def _get_sheets(self, file=None):
+        print ("files", file)
         try:
-            wb = open_workbook(file_contents=base64.b64decode(file))
+            wb = open_workbook(file_contents=base64.decodestring(file))
             return [(0, 0, {'name': sheet_name, 'rows': wb.sheet_by_name(sheet_name).nrows})
                     for sheet_name in wb.sheet_names()]
         except Exception as e:
@@ -101,7 +102,8 @@ class ImportFile(models.Model):
 
     def _import_rows(self, sheets, month, year, file=None):
         try:
-            wb = open_workbook(file_contents=base64.b64decode(file))
+            wb = open_workbook(file_contents=base64.decodestring(file))
+            # wb = open_workbook(file_contents=base64.b64decode(file))
             skipped_line_no = {}
             row_ids = []
             for sheet_dict in sheets:
