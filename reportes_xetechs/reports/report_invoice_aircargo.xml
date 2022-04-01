@@ -126,7 +126,7 @@
                         <span t-if="o.move_type == 'out_refund'">Credit Note</span>
                         <span t-if="o.move_type == 'in_refund'">Vendor Credit Note</span>
                         <span t-if="o.move_type == 'in_invoice'">Vendor Bill</span>
-                        <span t-field="o.number"/>
+                        <span t-field="o.name"/>
                     </h2>
 
                     <div id="informations" class="row mt32 mb32">
@@ -134,27 +134,27 @@
                             <strong>Description:</strong>
                             <p class="m-0" t-field="o.name"/>
                         </div>
-                        <div class="col-auto mw-100 mb-2" t-if="o.date_invoice" name="invoice_date">
+                        <div class="col-auto mw-100 mb-2" t-if="o.invoice_date" name="invoice_date">
                             <strong>Invoice Date:</strong>
-                            <p class="m-0" t-field="o.date_invoice"/>
+                            <p class="m-0" t-field="o.invoice_date"/>
                         </div>
                         <div class="col-auto mw-100 mb-2"
-                             t-if="o.date_due and o.move_type == 'out_invoice' and o.state in ('open', 'in_payment', 'paid')"
+                             t-if="o.invoice_date_due and o.move_type == 'out_invoice' and o.state in ('open', 'in_payment', 'paid')"
                              name="due_date">
                             <strong>Due Date:</strong>
-                            <p class="m-0" t-field="o.date_due"/>
+                            <p class="m-0" t-field="o.invoice_date_due"/>
                         </div>
-                        <div class="col-auto mw-100 mb-2" t-if="o.origin" name="origin">
+                        <div class="col-auto mw-100 mb-2" t-if="o.invoice_origin" name="origin">
                             <strong>Source:</strong>
-                            <p class="m-0" t-field="o.origin"/>
+                            <p class="m-0" t-field="o.invoice_origin"/>
                         </div>
                         <div class="col-auto mw-100 mb-2" t-if="o.partner_id.ref" name="customer_code">
                             <strong>Customer Code:</strong>
                             <p class="m-0" t-field="o.partner_id.ref"/>
                         </div>
-                        <div name="reference" class="col-auto mw-100 mb-2" t-if="o.reference">
+                        <div name="reference" class="col-auto mw-100 mb-2" t-if="o.payment_reference">
                             <strong>Reference:</strong>
-                            <p class="m-0" t-field="o.reference"/>
+                            <p class="m-0" t-field="o.payment_reference"/>
                         </div>
                     </div>
 
@@ -217,7 +217,7 @@
                                             <span t-field="line.name"/>
                                         </td>
                                         <td class="d-none">
-                                            <span t-field="line.origin"/>
+                                            <span t-field="line.move_id.invoice_origin"/>
                                         </td>
                                         <td class="text-right" t-if="o.move_type == 'in_invoice'">
                                             <span t-field="line.account_analytic_id"/>
@@ -234,7 +234,7 @@
                                             <span t-field="line.discount"/>
                                         </td>
                                         <td t-attf-class="text-left {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">
-                                            <span t-esc="', '.join(map(lambda x: (x.description or x.name), line.invoice_line_tax_ids))"/>
+                                            <span t-esc="', '.join(map(lambda x: (x.description or x.name), line.tax_ids))"/>
                                         </td>
                                         <td class="text-right o_price_total">
                                             <span t-field="line.price_subtotal"
@@ -284,30 +284,30 @@
                                             <span t-field="o.amount_untaxed"/>
                                         </td>
                                     </tr>
-                                    <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                                        <tr style="">
-                                            <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">
-                                                <td>
-                                                    <span t-esc="amount_by_group[0]"/>
-                                                </td>
-                                                <td class="text-right o_price_total">
-                                                    <span t-esc="amount_by_group[3]"/>
-                                                </td>
-                                            </t>
-                                            <t t-else="">
-                                                <td>
-                                                    <span t-esc="amount_by_group[0]"/>
-                                                    <span>&amp;nbsp;
-                                                        <span>on</span>
-                                                        <t t-esc="amount_by_group[4]"/>
-                                                    </span>
-                                                </td>
-                                                <td class="text-right o_price_total">
-                                                    <span t-esc="amount_by_group[3]"/>
-                                                </td>
-                                            </t>
-                                        </tr>
-                                    </t>
+<!--                                    <t t-foreach="o.amount_by_group" t-as="amount_by_group">-->
+<!--                                        <tr style="">-->
+<!--                                            <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">-->
+<!--                                                <td>-->
+<!--                                                    <span t-esc="amount_by_group[0]"/>-->
+<!--                                                </td>-->
+<!--                                                <td class="text-right o_price_total">-->
+<!--                                                    <span t-esc="amount_by_group[3]"/>-->
+<!--                                                </td>-->
+<!--                                            </t>-->
+<!--                                            <t t-else="">-->
+<!--                                                <td>-->
+<!--                                                    <span t-esc="amount_by_group[0]"/>-->
+<!--                                                    <span>&amp;nbsp;-->
+<!--                                                        <span>on</span>-->
+<!--                                                        <t t-esc="amount_by_group[4]"/>-->
+<!--                                                    </span>-->
+<!--                                                </td>-->
+<!--                                                <td class="text-right o_price_total">-->
+<!--                                                    <span t-esc="amount_by_group[3]"/>-->
+<!--                                                </td>-->
+<!--                                            </t>-->
+<!--                                        </tr>-->
+<!--                                    </t>-->
                                     <tr class="border-black o_total">
                                         <td style="color:#000000;">
                                             <strong>Total</strong>
@@ -320,10 +320,10 @@
                             </div>
                         </div>
                     </div>
-                    <p t-if="o.reference">
+                    <p t-if="o.payment_reference">
                         Please use the following communication for your payment :
                         <b>
-                            <span t-field="o.reference"/>
+                            <span t-field="o.payment_reference"/>
                         </b>
                     </p>
                     <br></br>
@@ -371,11 +371,11 @@
                         </table>
                     </div>
                     <br></br>
-                    <p t-if="o.comment" name="comment">
-                        <span t-field="o.comment"/>
-                    </p>
-                    <p t-if="o.payment_term_id" name="payment_term">
-                        <span t-field="o.payment_term_id.note"/>
+<!--                    <p t-if="o.comment" name="comment">-->
+<!--                        <span t-field="o.comment"/>-->
+<!--                    </p>-->
+                    <p t-if="o.invoice_payment_term_id" name="payment_term">
+                        <span t-field="o.invoice_payment_term_id.note"/>
                     </p>
                     <p t-if="o.fiscal_position_id.note" name="note">
                         <span t-field="o.fiscal_position_id.note"/>
@@ -387,7 +387,7 @@
                             <br/>
                             <br/>
                             <img class="border border-dark rounded"
-                                 t-att-src="o.partner_bank_id.build_qr_code_url(o.residual,(o.reference) if (o.reference) else o.number)"/>
+                                 t-att-src="o.partner_bank_id.build_qr_code_url(o.residual,(o.payment_reference) if (o.payment_reference) else o.name)"/>
                         </p>
                         <p t-if="(o.partner_bank_id.qr_code_valid == False)">
                             <strong class="text-center">The SEPA QR Code informations are not set correctly.</strong>
@@ -440,7 +440,7 @@
                         <span t-if="o.move_type == 'out_refund'">Credit Note</span>
                         <span t-if="o.move_type == 'in_refund'">Vendor Credit Note</span>
                         <span t-if="o.move_type == 'in_invoice'">Vendor Bill</span>
-                        <span t-field="o.number"/>
+                        <span t-field="o.name"/>
                     </h2>
 
                     <div id="informations" class="row mt32 mb32">
@@ -448,27 +448,27 @@
                             <strong>Description:</strong>
                             <p class="m-0" t-field="o.name"/>
                         </div>
-                        <div class="col-auto mw-100 mb-2" t-if="o.date_invoice" name="invoice_date">
+                        <div class="col-auto mw-100 mb-2" t-if="o.invoice_date" name="invoice_date">
                             <strong>Invoice Date:</strong>
-                            <p class="m-0" t-field="o.date_invoice"/>
+                            <p class="m-0" t-field="o.invoice_date"/>
                         </div>
                         <div class="col-auto mw-100 mb-2"
-                             t-if="o.date_due and o.move_type == 'out_invoice' and o.state in ('open', 'in_payment', 'paid')"
+                             t-if="o.invoice_date_due and o.move_type == 'out_invoice' and o.state in ('open', 'in_payment', 'paid')"
                              name="due_date">
                             <strong>Due Date:</strong>
-                            <p class="m-0" t-field="o.date_due"/>
+                            <p class="m-0" t-field="o.invoice_date_due"/>
                         </div>
-                        <div class="col-auto mw-100 mb-2" t-if="o.origin" name="origin">
+                        <div class="col-auto mw-100 mb-2" t-if="o.invoice_origin" name="origin">
                             <strong>Source:</strong>
-                            <p class="m-0" t-field="o.origin"/>
+                            <p class="m-0" t-field="o.invoice_origin"/>
                         </div>
                         <div class="col-auto mw-100 mb-2" t-if="o.partner_id.ref" name="customer_code">
                             <strong>Customer Code:</strong>
                             <p class="m-0" t-field="o.partner_id.ref"/>
                         </div>
-                        <div name="reference" class="col-auto mw-100 mb-2" t-if="o.reference">
+                        <div name="reference" class="col-auto mw-100 mb-2" t-if="o.payment_reference">
                             <strong>Reference:</strong>
-                            <p class="m-0" t-field="o.reference"/>
+                            <p class="m-0" t-field="o.payment_reference"/>
                         </div>
                     </div>
 
@@ -522,7 +522,7 @@
                                             <span t-field="line.name"/>
                                         </td>
                                         <td class="d-none">
-                                            <span t-field="line.origin"/>
+                                            <span t-field="line.move_id.invoice_origin"/>
                                         </td>
                                         <td class="text-right">
                                             <span t-field="line.quantity"/>
@@ -536,7 +536,7 @@
                                             <span t-field="line.discount"/>
                                         </td>
                                         <td t-attf-class="text-left {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">
-                                            <span t-esc="', '.join(map(lambda x: (x.description or x.name), line.invoice_line_tax_ids))"/>
+                                            <span t-esc="', '.join(map(lambda x: (x.description or x.name), line.tax_ids))"/>
                                         </td>
                                         <td class="text-right o_price_total">
                                             <span t-field="line.price_subtotal"
@@ -586,30 +586,30 @@
                                             <span t-field="o.amount_untaxed"/>
                                         </td>
                                     </tr>
-                                    <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                                        <tr style="">
-                                            <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">
-                                                <td>
-                                                    <span t-esc="amount_by_group[0]"/>
-                                                </td>
-                                                <td class="text-right o_price_total">
-                                                    <span t-esc="amount_by_group[3]"/>
-                                                </td>
-                                            </t>
-                                            <t t-else="">
-                                                <td>
-                                                    <span t-esc="amount_by_group[0]"/>
-                                                    <span>&amp;nbsp;
-                                                        <span>on</span>
-                                                        <t t-esc="amount_by_group[4]"/>
-                                                    </span>
-                                                </td>
-                                                <td class="text-right o_price_total">
-                                                    <span t-esc="amount_by_group[3]"/>
-                                                </td>
-                                            </t>
-                                        </tr>
-                                    </t>
+<!--                                    <t t-foreach="o.amount_by_group" t-as="amount_by_group">-->
+<!--                                        <tr style="">-->
+<!--                                            <t t-if="len(o.tax_line_ids) == 1 and o.amount_untaxed == amount_by_group[2]">-->
+<!--                                                <td>-->
+<!--                                                    <span t-esc="amount_by_group[0]"/>-->
+<!--                                                </td>-->
+<!--                                                <td class="text-right o_price_total">-->
+<!--                                                    <span t-esc="amount_by_group[3]"/>-->
+<!--                                                </td>-->
+<!--                                            </t>-->
+<!--                                            <t t-else="">-->
+<!--                                                <td>-->
+<!--                                                    <span t-esc="amount_by_group[0]"/>-->
+<!--                                                    <span>&amp;nbsp;-->
+<!--                                                        <span>on</span>-->
+<!--                                                        <t t-esc="amount_by_group[4]"/>-->
+<!--                                                    </span>-->
+<!--                                                </td>-->
+<!--                                                <td class="text-right o_price_total">-->
+<!--                                                    <span t-esc="amount_by_group[3]"/>-->
+<!--                                                </td>-->
+<!--                                            </t>-->
+<!--                                        </tr>-->
+<!--                                    </t>-->
                                     <tr class="border-black o_total">
                                         <td>
                                             <strong>Total</strong>
@@ -622,10 +622,10 @@
                             </div>
                         </div>
                     </div>
-                    <p t-if="o.reference">
+                    <p t-if="o.payment_reference">
                         Please use the following communication for your payment :
                         <b>
-                            <span t-field="o.reference"/>
+                            <span t-field="o.payment_reference"/>
                         </b>
                     </p>
                     <br></br>
@@ -673,11 +673,11 @@
                         </table>
                     </div>
                     <br></br>
-                    <p t-if="o.comment" name="comment">
-                        <span t-field="o.comment"/>
-                    </p>
-                    <p t-if="o.payment_term_id" name="payment_term">
-                        <span t-field="o.payment_term_id.note"/>
+<!--                    <p t-if="o.comment" name="comment">-->
+<!--                        <span t-field="o.comment"/>-->
+<!--                    </p>-->
+                    <p t-if="o.invoice_payment_term_id" name="payment_term">
+                        <span t-field="o.invoice_payment_term_id.note"/>
                     </p>
                     <p t-if="o.fiscal_position_id.note" name="note">
                         <span t-field="o.fiscal_position_id.note"/>
@@ -689,7 +689,7 @@
                             <br/>
                             <br/>
                             <img class="border border-dark rounded"
-                                 t-att-src="o.partner_bank_id.build_qr_code_url(o.residual,(o.reference) if (o.reference) else o.number)"/>
+                                 t-att-src="o.partner_bank_id.build_qr_code_url(o.residual,(o.payment_reference) if (o.payment_reference) else o.name)"/>
                         </p>
                         <p t-if="(o.partner_bank_id.qr_code_valid == False)">
                             <strong class="text-center">The SEPA QR Code informations are not set correctly.</strong>
