@@ -10,252 +10,228 @@ from odoo.tools.misc import format_date
 class AccountPartnerLedger(models.AbstractModel):
     _inherit = 'account.partner.ledger'
 
-    def _do_query_group_by_account(self, options, line_id):
-        account_types = [a.get('id') for a in options.get('account_type') if a.get('selected', False)]
-        if not account_types:
-            account_types = [a.get('id') for a in options.get('account_type')]
-        if self.env.user.company_id.currency_id.id != 2:
-            select = """
-                           ,COALESCE(
-                               SUM(
-                                   "account_move_line".debit
-                                   -"account_move_line".credit
-                               ),
-                               0
-                           ),
-                           COALESCE(
-                               SUM("account_move_line".debit),
-                                0
-                            ),
-                            COALESCE(
-                                SUM("account_move_line".credit),
-                                0
-                            )
-                            """
-        else:
-            select = """
-                          ,COALESCE(
-                              SUM(
-                                  "account_move_line".debit /
-                                      (CASE WHEN "account_move_line".company_currency_id = 2 THEN 1 ELSE "res_currency_rate".rate END)
-                                  -"account_move_line".credit /
-                                      (CASE WHEN "account_move_line".company_currency_id = 2 THEN 1 ELSE "res_currency_rate".rate END)
-                              ),
-                              0
-                          ),
-                          COALESCE(
-                              SUM("account_move_line".debit /
-                                  (CASE WHEN "account_move_line".company_currency_id = 2 THEN 1 ELSE "res_currency_rate".rate END)),
-                               0
-                           ),
-                           COALESCE(
-                               SUM("account_move_line".credit /
-                                   (CASE WHEN "account_move_line".company_currency_id = 2 THEN 1 ELSE "res_currency_rate".rate END)),
-                               0
-                           )
-                           """
-        if options.get('cash_basis'):
-            select = select.replace('debit', 'debit_cash_basis').replace('credit', 'credit_cash_basis')
-        sql = "SELECT \"account_move_line\".partner_id%s FROM %s WHERE %s%s AND \"account_move_line\".partner_id IS NOT NULL GROUP BY \"account_move_line\".partner_id"
-        tables, where_clause, where_params = self.env['account.move.line']._query_get([('account_id.internal_type', 'in', account_types)])
+    filter_branch = True
 
-        if self.env.user.company_id.currency_id.id == 2:
-            tables += """ LEFT JOIN "res_currency_rate" ON 
-                                ("account_move_line".company_currency_id = "res_currency_rate".currency_id 
-                                    AND "res_currency_rate".name = date_trunc('month', "account_move_line".date)::date) """
-        line_clause = line_id and ' AND \"account_move_line\".partner_id = ' + str(line_id) or ''
-        if options.get('unreconciled'):
-            line_clause += ' AND \"account_move_line\".full_reconcile_id IS NULL'
-        if options.get('branch'):
-            where_clause += 'and ("account_move_line"."branch_id" in ('
-            for a in range(len(options.get('branch'))):
-                where_clause += '%s,'
-            where_clause = where_clause[:-1]
+    def _get_columns_name(self, options):
+        columns = [
+            {},
+            {'name': _('JRNL')},
+            {'name': _('Account')},
+            {'name': _('Branch')},
+            {'name': _('Ref')},
+            {'name': _('Due Date'), 'class': 'date'},
+            {'name': _('Matching Number')},
+            {'name': _('Initial Balance'), 'class': 'number'},
+            {'name': _('Debit'), 'class': 'number'},
+            {'name': _('Credit'), 'class': 'number'}]
 
-            where_clause += '))'
-            # branch_list = [1,2]
-            for a in options.get('branch'):
-                where_params.append(int(a))
-        query = sql % (select, tables, where_clause, line_clause)
-        self.env.cr.execute(query, where_params)
-        results = self.env.cr.fetchall()
-        results = dict([(k[0], {'balance': k[1], 'debit': k[2], 'credit': k[3]}) for k in results])
-        return results
+        if self.user_has_groups('base.group_multi_currency'):
+            columns.append({'name': _('Amount Currency'), 'class': 'number'})
 
-    def _group_by_partner_id(self, options, line_id):
-        partners = {}
-        account_types = [a.get('id') for a in options.get('account_type') if a.get('selected', False)]
-        if not account_types:
-            account_types = [a.get('id') for a in options.get('account_type')]
-        date_from = options['date']['date_from']
-        results = self._do_query_group_by_account(options, line_id)
-        initial_bal_results = self.with_context(
-            date_from=False, date_to=fields.Date.from_string(date_from) + timedelta(days=-1)
-        )._do_query_group_by_account(options, line_id)
-        context = self.env.context
-        base_domain = [('date', '<=', context['date_to']), ('company_id', 'in', context['company_ids']), ('account_id.internal_type', 'in', account_types)]
-        base_domain.append(('date', '>=', date_from))
-        if context['state'] == 'posted':
-            base_domain.append(('move_id.state', '=', 'posted'))
-        if options.get('unreconciled'):
-            base_domain.append(('full_reconcile_id', '=', False))
-        for partner_id, result in results.items():
-            domain = list(base_domain)  # copying the base domain
-            domain.append(('partner_id', '=', partner_id))
-            partner = self.env['res.partner'].browse(partner_id)
-            partners[partner] = result
-            partners[partner]['initial_bal'] = initial_bal_results.get(partner.id, {'balance': 0, 'debit': 0, 'credit': 0})
-            partners[partner]['balance'] += partners[partner]['initial_bal']['balance']
-            partners[partner]['total_lines'] = 0
-            if options.get('branch'):
-                branch_list = []
-                for a in options.get('branch'):
-                    branch_list.append(int(a))
-                domain.append(('branch_id','in',branch_list))
-            if not context.get('print_mode'):
-                partners[partner]['total_lines'] = self.env['account.move.line'].search_count(domain)
-                offset = int(options.get('lines_offset', 0))
-                limit = self.MAX_LINES
-                partners[partner]['lines'] = self.env['account.move.line'].search(domain, order='date,id', limit=limit, offset=offset)
-            else:
-                partners[partner]['lines'] = self.env['account.move.line'].search(domain, order='date,id')
+        columns.append({'name': _('Balance'), 'class': 'number'})
 
-        # Add partners with an initial balance != 0 but without any AML in the selected period.
-        prec = self.env.user.company_id.currency_id.rounding
-        missing_partner_ids = set(initial_bal_results.keys()) - set(results.keys())
-        for partner_id in missing_partner_ids:
-            if not float_is_zero(initial_bal_results[partner_id]['balance'], precision_rounding=prec):
-                partner = self.env['res.partner'].browse(partner_id)
-                partners[partner] = {'balance': 0, 'debit': 0, 'credit': 0}
-                partners[partner]['initial_bal'] = initial_bal_results[partner_id]
-                partners[partner]['balance'] += partners[partner]['initial_bal']['balance']
-                partners[partner]['lines'] = self.env['account.move.line']
-                partners[partner]['total_lines'] = 0
-        return partners
+        return columns
+
+    @api.model
+    def _get_options_domain(self, options):
+        domain = super(AccountPartnerLedger, self)._get_options_domain(options)
+
+        if options.get('branch') and options.get('branch_ids'):
+            domain += [
+                ('branch_id','in',options.get('branch_ids') )
+            ]
+
+        return domain
+
+    @api.model
+    def _load_more_lines(self, options, line_id, offset, load_more_remaining, progress):
+        ''' Get lines for an expanded line using the load more.
+        :param options: The report options.
+        :return:        A list of lines, each one represented by a dictionary.
+        '''
+        lines = []
+        expanded_partner = line_id and self.env['res.partner'].browse(int(line_id[9:]))
+
+        load_more_counter = self.MAX_LINES
+
+        starting_offset = offset
+        starting_load_more_counter = load_more_counter
+
+        # Fetch the next batch of lines
+        amls_query, amls_params = self._get_query_amls(options, expanded_partner=expanded_partner, offset=offset, limit=load_more_counter)
+        self._cr.execute(amls_query, amls_params)
+        for aml in self._cr.dictfetchall():
+            # Don't show more line than load_more_counter.
+            if load_more_counter == 0:
+                break
+
+            cumulated_init_balance = progress
+            progress += aml['balance']
+
+            # account.move.line record line.
+            lines.append(self._get_report_line_move_line(options, expanded_partner, aml, cumulated_init_balance, progress))
+
+            offset += 1
+            load_more_remaining -= 1
+            load_more_counter -= 1
+
+        query, params = self._get_lines_without_partner(options, expanded_partner=expanded_partner, offset=offset-starting_offset, limit=starting_load_more_counter-load_more_counter)
+        self._cr.execute(query, params)
+        for row in self._cr.dictfetchall():
+            # Don't show more line than load_more_counter.
+            if load_more_counter == 0:
+                break
+
+            row['class'] = ' text-muted'
+            if line_id == 'loadmore_0':
+                # reconciled lines without partners are fetched to be displayed under the matched partner
+                # and thus but be inversed to be displayed under the unknown partner
+                row['debit'] = row['balance'] < 0 and row['credit'] or 0
+                row['credit'] = row['balance'] > 0 and row['debit'] or 0
+                row['balance'] = -row['balance']
+            cumulated_init_balance = progress
+            progress += row['balance']
+            lines.append(self._get_report_line_move_line(options, expanded_partner, row, cumulated_init_balance, progress))
+
+            offset += 1
+            load_more_remaining -= 1
+            load_more_counter -= 1
+
+        if load_more_remaining > 0:
+            # Load more line.
+            lines.append(self._get_report_line_load_more(
+                options,
+                expanded_partner,
+                offset,
+                load_more_remaining,
+                progress,
+            ))
+        return lines
 
 
 
     @api.model
-    def _get_lines(self, options, line_id=None):
-        offset = int(options.get('lines_offset', 0))
-        lines = []
-        context = self.env.context
-        company_id = context.get('company_id') or self.env.user.company_id
-        if line_id:
-            line_id = int(line_id.split('_')[1]) or None
-        elif options.get('partner_ids') and len(options.get('partner_ids')) == 1:
-            #If a default partner is set, we only want to load the line referring to it.
-            partner_id = options['partner_ids'][0]
-            line_id = partner_id
-        if line_id:
-            if 'partner_' + str(line_id) not in options.get('unfolded_lines', []):
-                options.get('unfolded_lines', []).append('partner_' + str(line_id))
+    def _get_report_line_move_line(self, options, partner, aml, cumulated_init_balance, cumulated_balance):
+        if aml['payment_id']:
+            caret_type = 'account.payment'
+        else:
+            caret_type = 'account.move'
 
-        grouped_partners = self._group_by_partner_id(options, line_id)
-        sorted_partners = sorted(grouped_partners, key=lambda p: p.name or '')
-        unfold_all = context.get('print_mode') and not options.get('unfolded_lines')
-        total_initial_balance = total_debit = total_credit = total_balance = 0.0
-        for partner in sorted_partners:
-            debit = grouped_partners[partner]['debit']
-            credit = grouped_partners[partner]['credit']
-            balance = grouped_partners[partner]['balance']
-            initial_balance = grouped_partners[partner]['initial_bal']['balance']
-            total_initial_balance += initial_balance
-            total_debit += debit
-            total_credit += credit
-            total_balance += balance
-            columns = [self.format_value(initial_balance), self.format_value(debit), self.format_value(credit)]
-            if self.user_has_groups('base.group_multi_currency'):
-                columns.append('')
-            columns.append(self.format_value(balance))
-            # don't add header for `load more`
-            if offset == 0:
-                lines.append({
-                    'id': 'partner_' + str(partner.id),
-                    'name': partner.name,
-                    'columns': [{'name': v} for v in columns],
-                    'level': 2,
-                    'trust': partner.trust,
-                    'unfoldable': True,
-                    'unfolded': 'partner_' + str(partner.id) in options.get('unfolded_lines') or unfold_all,
-                    'colspan': 6,
-                })
-            user_company = self.env.user.company_id
-            used_currency = user_company.currency_id
-            if 'partner_' + str(partner.id) in options.get('unfolded_lines') or unfold_all:
-                if offset == 0:
-                    progress = initial_balance
-                else:
-                    progress = float(options.get('lines_progress', initial_balance))
-                domain_lines = []
-                amls = grouped_partners[partner]['lines']
+        date_maturity = aml['date_maturity'] and format_date(self.env, fields.Date.from_string(aml['date_maturity']))
+        
+        aml_id = self.env['account.move.line'].browse(int(aml['id']))
+        branch_id = aml_id.branch_id.name or ''
+        
+        columns = [
+            {'name': aml['journal_code']},
+            {'name': aml['account_code']},
+            {'name': branch_id},
+            {'name': self._format_aml_name(aml['name'], aml['ref'], aml['move_name']), 'class': 'o_account_report_line_ellipsis'},
+            {'name': date_maturity or '', 'class': 'date'},
+            {'name': aml['matching_number'] or ''},
+            {'name': self.format_value(cumulated_init_balance), 'class': 'number'},
+            {'name': self.format_value(aml['debit'], blank_if_zero=True), 'class': 'number'},
+            {'name': self.format_value(aml['credit'], blank_if_zero=True), 'class': 'number'},
+        ]
+        if self.user_has_groups('base.group_multi_currency'):
+            if aml['currency_id']:
+                currency = self.env['res.currency'].browse(aml['currency_id'])
+                formatted_amount = self.format_value(aml['amount_currency'], currency=currency, blank_if_zero=True)
+                columns.append({'name': formatted_amount, 'class': 'number'})
+            else:
+                columns.append({'name': ''})
+        columns.append({'name': self.format_value(cumulated_balance), 'class': 'number'})
+        return {
+            'id': aml['id'],
+            'parent_id': 'partner_%s' % (partner.id if partner else 0),
+            'name': format_date(self.env, aml['date']),
+            'class': 'text' + aml.get('class', ''),  # do not format as date to prevent text centering
+            'columns': columns,
+            'caret_options': caret_type,
+            'level': 2,
+        }
 
-                remaining_lines = 0
-                if not context.get('print_mode'):
-                    remaining_lines = grouped_partners[partner]['total_lines'] - offset - len(amls)
 
-                for line in amls:
-                    if options.get('cash_basis'):
-                        line_debit = line.debit_cash_basis
-                        line_credit = line.credit_cash_basis
-                    else:
-                        line_debit = line.debit
-                        line_credit = line.credit
-                    date = line.date
-                    line_currency = line.company_id.currency_id
-                    line_debit = line_currency._convert(line_debit, used_currency, user_company, date)
-                    line_credit = line_currency._convert(line_credit, used_currency, user_company, date)
-                    progress_before = progress
-                    progress = progress + line_debit - line_credit
-                    caret_type = 'account.move'
-                    if line.invoice_id:
-                        caret_type = 'account.invoice.in' if line.invoice_id.type in ('in_refund', 'in_invoice') else 'account.invoice.out'
-                    elif line.payment_id:
-                        caret_type = 'account.payment'
-                    domain_columns = [line.journal_id.code, line.account_id.code, self._format_aml_name(line),
-                                      line.date_maturity and format_date(self.env, line.date_maturity) or '',
-                                      line.full_reconcile_id.name or '', self.format_value(progress_before),
-                                      line_debit != 0 and self.format_value(line_debit) or '',
-                                      line_credit != 0 and self.format_value(line_credit) or '']
-                    if self.user_has_groups('base.group_multi_currency'):
-                        domain_columns.append(self.with_context(no_format=False).format_value(line.amount_currency, currency=line.currency_id) if line.amount_currency != 0 else '')
-                    domain_columns.append(self.format_value(progress))
-                    columns = [{'name': v} for v in domain_columns]
-                    columns[3].update({'class': 'date'})
-                    domain_lines.append({
-                        'id': line.id,
-                        'parent_id': 'partner_' + str(partner.id),
-                        'name': format_date(self.env, line.date),
-                        'class': 'date',
-                        'columns': columns,
-                        'caret_options': caret_type,
-                        'level': 4,
-                    })
+    @api.model
+    def _get_report_line_total(self, options, initial_balance, debit, credit, balance):
+        columns = [
+            {'name' : ''},
+            {'name': self.format_value(initial_balance), 'class': 'number'},
+            {'name': self.format_value(debit), 'class': 'number'},
+            {'name': self.format_value(credit), 'class': 'number'},
+        ]
+        if self.user_has_groups('base.group_multi_currency'):
+            columns.append({'name': ''})
+        columns.append({'name': self.format_value(balance), 'class': 'number'})
+        return {
+            'id': 'partner_ledger_total_%s' % self.env.company.id,
+            'name': _('Total'),
+            'class': 'total',
+            'level': 1,
+            'columns': columns,
+            'colspan': 6,
+        }
 
-                # load more
-                if remaining_lines > 0:
-                    domain_lines.append({
-                        'id': 'loadmore_%s' % partner.id,
-                        'offset': offset + self.MAX_LINES,
-                        'progress': progress,
-                        'class': 'o_account_reports_load_more text-center',
-                        'parent_id': 'partner_%s' % partner.id,
-                        'name': _('Load more... (%s remaining)') % remaining_lines,
-                        'colspan': 10 if self.user_has_groups('base.group_multi_currency') else 9,
-                        'columns': [{}],
-                    })
-                lines += domain_lines
+    @api.model
+    def _get_report_line_partner(self, options, partner, initial_balance, debit, credit, balance):
+        company_currency = self.env.company.currency_id
+        unfold_all = self._context.get('print_mode') and not options.get('unfolded_lines')
 
-        if not line_id:
-            total_columns = ['', '', '', '', '', self.format_value(total_initial_balance), self.format_value(total_debit), self.format_value(total_credit)]
-            if self.user_has_groups('base.group_multi_currency'):
-                total_columns.append('')
-            total_columns.append(self.format_value(total_balance))
-            lines.append({
-                'id': 'grouped_partners_total',
-                'name': _('Total'),
-                'level': 0,
-                'class': 'o_account_reports_domain_total',
-                'columns': [{'name': v} for v in total_columns],
-            })
-        return lines
+        columns = [
+            {'name' : ''},
+            {'name': self.format_value(initial_balance), 'class': 'number'},
+            {'name': self.format_value(debit), 'class': 'number'},
+            {'name': self.format_value(credit), 'class': 'number'},
+        ]
+        if self.user_has_groups('base.group_multi_currency'):
+            columns.append({'name': ''})
+        columns.append({'name': self.format_value(balance), 'class': 'number'})
+
+        return {
+            'id': 'partner_%s' % (partner.id if partner else 0),
+            'partner_id': partner.id if partner else None,
+            'name': partner is not None and (partner.name or '')[:128] or _('Unknown Partner'),
+            'columns': columns,
+            'level': 2,
+            'trust': partner.trust if partner else None,
+            'unfoldable': not company_currency.is_zero(debit) or not company_currency.is_zero(credit),
+            'unfolded': 'partner_%s' % (partner.id if partner else 0) in options['unfolded_lines'] or unfold_all,
+            'colspan': 6,
+        }
+
+    @api.model
+    def _get_report_line_move_line(self, options, partner, aml, cumulated_init_balance, cumulated_balance):
+        if aml['payment_id']:
+            caret_type = 'account.payment'
+        else:
+            caret_type = 'account.move'
+        date_maturity = aml['date_maturity'] and format_date(self.env, fields.Date.from_string(aml['date_maturity']))
+        aml_id = self.env['account.move.line'].browse(aml['id'])
+        columns = [
+            {'name': aml['journal_code']},
+            {'name': aml['account_code']},
+            {'name' : aml_id.branch_id.name},
+            {'name': self._format_aml_name(aml['name'], aml['ref'], aml['move_name']), 'class': 'o_account_report_line_ellipsis'},
+            {'name': date_maturity or '', 'class': 'date'},
+            {'name': aml['matching_number'] or ''},
+            {'name': self.format_value(cumulated_init_balance), 'class': 'number'},
+            {'name': self.format_value(aml['debit'], blank_if_zero=True), 'class': 'number'},
+            {'name': self.format_value(aml['credit'], blank_if_zero=True), 'class': 'number'},
+        ]
+        if self.user_has_groups('base.group_multi_currency'):
+            if aml['currency_id']:
+                currency = self.env['res.currency'].browse(aml['currency_id'])
+                formatted_amount = self.format_value(aml['amount_currency'], currency=currency, blank_if_zero=True)
+                columns.append({'name': formatted_amount, 'class': 'number'})
+            else:
+                columns.append({'name': ''})
+        columns.append({'name': self.format_value(cumulated_balance), 'class': 'number'})
+        return {
+            'id': aml['id'],
+            'parent_id': 'partner_%s' % (partner.id if partner else 0),
+            'name': format_date(self.env, aml['date']),
+            'class': 'text' + aml.get('class', ''),  # do not format as date to prevent text centering
+            'columns': columns,
+            'caret_options': caret_type,
+            'level': 2,
+        }

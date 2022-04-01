@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<template id="search_template_branch">
+		    <a type="button" class="dropdown-toggle account_branch_filter" data-toggle="dropdown">
+		        <span class="fa fa-folder-open"/> Branch
+		        <span class="caret"/>
+		    </a>
+		    <ul class="dropdown-menu o_filters_menu" role="menu">
+		        <li style='margin-left: 10px; margin-right: 10px;'>
+		            <b>Branch</b><br />
+		            <select class="js_branch_auto_complete" data-filter="branch" multiple="multiple" style="min-width: 100px;">
+		                <t t-foreach="branch" t-as="a">
+		                    <option t-att-value="a[0]"><t t-esc="a[1]" /></option>
+		                </t>
+		            </select>
+		        </li>
+		    </ul>
+		</template>
+		 <template id="search_template_vlnr">
+            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                <span class="fa fa-filter"/>
+                Flight Numbers:
+                <t t-set="selected_numbers"
+                   t-value="', '.join(option.get('name') for option in options['vlnr'] if option.get('selected'))"/>
+                <t t-if="selected_numbers">
+                    <t t-esc="selected_numbers"/>
+                </t>
+                <t t-else="">
+                    All
+                </t>
+            </a>
+            <div class="dropdown-menu o_filters_menu" role="menu">
+                <t t-foreach="options['vlnr']" t-as="o">
+                    <a role="menuitem" class="dropdown-item js_account_report_choice_filter" t-att-title="o.get('name')"
+                       data-filter="vlnr" t-att-data-id="o.get('id')">
+                        <t t-esc="o.get('name')"/>
+                    </a>
+                </t>
+            </div>
+        </template>
+		
+
+    	<!-- Add custom browseinfo_search_template  -->
+        <template id="browseinfo_search_template" inherit_id="account_reports.search_template">
+            <xpath expr="//div[@class='btn-group dropdown o_account_reports_filter_analytic']" position="after">
+            
+				<div class="btn-group dropdown o_account_reports_filter_branch">
+					<t t-call="branch_accounting_report.search_template_branch"/>
+				</div>
+				<div class="btn-group dropdown o_account_reports_filter_analytic"
+                     t-if="options.get('vlnr')">
+                    <t t-call="branch_accounting_report.search_template_vlnr"/>
+                </div>
+            </xpath>
+        </template>
+        
+
+	</data>
+</odoo>
