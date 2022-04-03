@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models, tools,_
-from odoo.exceptions import Warning
+from odoo.exceptions import ValidationError
 
 class ResUser(models.Model):
     _inherit = 'res.users'
@@ -10,7 +10,8 @@ class ResUser(models.Model):
     
     @api.onchange('read_only')
     def set_read_only_user(self):
-        read_only_grp_id = self.env['ir.model.data'].get_object_reference('generic_read_only_user_app', 'group_read_only_user')[1]
+        ir_model_data = self.env['ir.model.data']
+        read_only_grp_id = self.env['ir.model.data']._xmlid_lookup('generic_read_only_user_app.group_read_only_user')[2]
         if not self.read_only:
             self.read_only = True
             group_list = []
@@ -48,5 +49,5 @@ class IrRule(models.Model):
         if model_name not in obj_list:
             if self.env.user.has_group('generic_read_only_user_app.group_read_only_user'):
                 if mode != 'read':
-                    raise Warning(_('Read only user can not done this operation..! (%s)') % self.env.user.name)
+                    raise ValidationError(_('Read only user can not done this operation..! (%s)') % self.env.user.name)
         return res
