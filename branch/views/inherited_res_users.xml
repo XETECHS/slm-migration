@@ -25,7 +25,7 @@
             <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
             <field name="arch" type="xml">
                     <xpath expr="//field[@name='company_id']" position="after">
-                        <field name="branch_id" options="{'no_create': True}" context="{'branch_id': branch_id}" groups="branch.group_branch_user_manager"/>
+                        <field name="branch_id" options="{'no_create': True}" context="{'branch_id':branch_id}" groups="branch.group_branch_user_manager"/>
                     </xpath>
             </field>
         </record>

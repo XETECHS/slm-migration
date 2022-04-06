@@ -76,22 +76,24 @@ class report_account_general_ledger(models.AbstractModel):
 
     @api.model
     def _get_initial_balance_line(self, options, account, amount_currency, debit, credit, balance):
+        columns = [
+            {'name': ''},
+            {'name': self.format_value(debit), 'class': 'number'},
+            {'name': self.format_value(credit), 'class': 'number'},
+            {'name': self.format_value(balance), 'class': 'number'},
+        ]
+
         has_foreign_currency = account.currency_id and account.currency_id != account.company_id.currency_id or False
+        if self.user_has_groups('base.group_multi_currency'):
+            columns.insert(0, {'name': has_foreign_currency and self.format_value(amount_currency, currency=account.currency_id, blank_if_zero=True) or '', 'class': 'number'})
         return {
             'id': 'initial_%d' % account.id,
             'class': 'o_account_reports_initial_balance',
             'name': _('Initial Balance'),
             'parent_id': 'account_%d' % account.id,
-            'columns': [
-                {'name': ''},
-                {'name': has_foreign_currency and self.format_value(amount_currency, currency=account.currency_id, blank_if_zero=True) or '', 'class': 'number'},
-                {'name': self.format_value(debit), 'class': 'number'},
-                {'name': self.format_value(credit), 'class': 'number'},
-                {'name': self.format_value(balance), 'class': 'number'},
-            ],
+            'columns': columns,
             'colspan': 4,
         }
-
 
     @api.model
     def _get_account_total_line(self, options, account, amount_currency, debit, credit, balance):
@@ -120,27 +122,26 @@ class report_account_general_ledger(models.AbstractModel):
     @api.model
     def _get_account_title_line(self, options, account, amount_currency, debit, credit, balance, has_lines):
         has_foreign_currency = account.currency_id and account.currency_id != account.company_id.currency_id or False
-
         unfold_all = self._context.get('print_mode') and not options.get('unfolded_lines')
 
         name = '%s %s' % (account.code, account.name)
-        if len(name) > 40 and not self._context.get('print_mode'):
-            name = name[:40] + '...'
+        columns = [
+            {'name': ''},
+            {'name': self.format_value(debit), 'class': 'number'},
+            {'name': self.format_value(credit), 'class': 'number'},
+            {'name': self.format_value(balance), 'class': 'number'},
+        ]
+        if self.user_has_groups('base.group_multi_currency'):
+            columns.insert(0, {'name': has_foreign_currency and self.format_value(amount_currency, currency=account.currency_id, blank_if_zero=True) or '', 'class': 'number'})
         return {
             'id': 'account_%d' % account.id,
             'name': name,
-            'title_hover': name,
-            'columns': [
-                {'name': ''},
-                {'name': has_foreign_currency and self.format_value(amount_currency, currency=account.currency_id, blank_if_zero=True) or '', 'class': 'number'},
-                {'name': self.format_value(debit), 'class': 'number'},
-                {'name': self.format_value(credit), 'class': 'number'},
-                {'name': self.format_value(balance), 'class': 'number'},
-            ],
-            'level': 2,
+            'columns': columns,
+            'level': 1,
             'unfoldable': has_lines,
             'unfolded': has_lines and 'account_%d' % account.id in options.get('unfolded_lines') or unfold_all,
             'colspan': 4,
+            'class': 'o_account_reports_totals_below_sections' if self.env.company.totals_below_sections else '',
         }
 
     @api.model
@@ -156,7 +157,7 @@ class report_account_general_ledger(models.AbstractModel):
                 {'name': self.format_value(credit), 'class': 'number'},
                 {'name': self.format_value(balance), 'class': 'number'},
             ],
-            'colspan': 5,
+            'colspan': self.user_has_groups('base.group_multi_currency') and 5 or 4,
         }
 
 

@@ -3,7 +3,7 @@
 
 {
     "name" : "Financial Reports For Branch Enterprise Edition Odoo",
-    "version" : "15.0.0.3",
+    "version" : "15.0.0.4",
     "category" : "Accounting",
     'summary': 'Multiple Branch Management Multi Branch app Multiple Unit Operating unit branch Invoicing branch financial branch wise filter reports branch reports branch Accounting statement Financial branch Reports for single company with Multi Branches multi company',
     "description": """
