@@ -11,7 +11,7 @@
     'license': 'LGPL-3',
     'depends': ['cash_session'],
     'data': [
-        'session_summary_report.xml',
+        # 'session_summary_report.xml',
         'views/report_session_summary.xml',
     ],
     'installable': True,

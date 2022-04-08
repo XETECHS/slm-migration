@@ -38,5 +38,3 @@ class AccountPayment(models.Model):
                 values["invoice_number"] = inv
         res = super(AccountPayment, self).create(values)
         return res
-
-AccountPayment()

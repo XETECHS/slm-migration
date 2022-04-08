@@ -17,94 +17,45 @@ class CashSession(models.Model):
         ('closed', 'Closed & Posted'),
     ]
 
-    config_id = fields.Many2one(
-        'cash.config', string='Cash Config',
-        help="The physical Cash Config you will use.",
-        required=False,
-        readonly=True,
-        index=True)
+    config_id = fields.Many2one('cash.config', string='Cash Config', help="The physical Cash Config you will use.", readonly=True, index=True)
     name = fields.Char(string='Session ID', required=True, readonly=True, default='/')
-    user_id = fields.Many2one(
-        'res.users', string='Responsible',
-        required=True,
-        index=True,
-        readonly=True,
-        states={'opening_control': [('readonly', False)]},
-        default=lambda self: self.env.uid)
-    currency_id = fields.Many2one(
-        'res.currency', related='config_id.currency_id', string="Currency", readonly=False)
+    user_id = fields.Many2one('res.users', string='Responsible', required=True, index=True, readonly=True, states={'opening_control': [('readonly', False)]}, default=lambda self: self.env.uid)
+    currency_id = fields.Many2one(related='config_id.currency_id', string="Currency", readonly=False)
     start_at = fields.Datetime(string='Opening Date', readonly=True)
     stop_at = fields.Datetime(string='Closing Date', readonly=True, copy=False)
 
-    state = fields.Selection(
-        CASH_SESSION_STATE, string='Status',
-        required=True, readonly=True,
-        index=True, copy=False, default='opening_control')
+    state = fields.Selection(CASH_SESSION_STATE, string='Status', required=True, readonly=True, index=True, copy=False, default='opening_control')
 
-    sequence_number = fields.Integer(
-        string='Order Sequence Number', help='A sequence number that is incremented with each order', default=1)
-    login_number = fields.Integer(string='Login Sequence Number',
-                                  help='A sequence number that is incremented each time a user resumes the cash session', default=0)
+    sequence_number = fields.Integer(string='Order Sequence Number', help='A sequence number that is incremented with each order', default=1)
+    login_number = fields.Integer(string='Login Sequence Number', help='A sequence number that is incremented each time a user resumes the cash session', default=0)
 
     cash_control = fields.Boolean(compute='_compute_cash_all', string='Has Cash Control')
-    cash_journal_id = fields.Many2one(
-        'account.journal', compute='_compute_cash_all', string='Cash Journal', store=True)
-    cash_register_id = fields.Many2one(
-        'account.bank.statement', compute='_compute_cash_all', string='Cash Register', store=True)
+    cash_journal_id = fields.Many2one('account.journal', compute='_compute_cash_all', string='Cash Journal', store=True)
+    cash_register_id = fields.Many2one('account.bank.statement', compute='_compute_cash_all', string='Cash Register', store=True)
 
-    cash_register_balance_end_real = fields.Monetary(
-        compute='_compute_cash_all',
-        string="Ending Balance",
-        help="Total of closing cash control lines.",
-        readonly=True)
-    cash_register_balance_start = fields.Monetary(
-        compute='_compute_cash_all',
-        string="Starting Balance",
-        help="Total of opening cash control lines.",
-        readonly=True)
-    cash_register_total_entry_encoding = fields.Monetary(
-        compute='_compute_cash_all',
-        string='Total Cash Transaction',
-        readonly=True,
-        help="Total of all paid sales orders")
-    cash_register_balance_end = fields.Monetary(
-        compute='_compute_cash_all',
-        digits=0,
-        string="Theoretical Closing Balance",
-        help="Sum of opening balance and transactions.",
-        readonly=True)
-    cash_register_difference = fields.Monetary(
-        compute='_compute_cash_all',
-        string='Difference',
-        help="Difference between the theoretical closing balance and the real closing balance.",
-        readonly=True)
+    cash_register_balance_end_real = fields.Monetary(compute='_compute_cash_all', string="Ending Balance", help="Total of closing cash control lines.")
+    cash_register_balance_start = fields.Monetary(compute='_compute_cash_all', string="Starting Balance", help="Total of opening cash control lines.", readonly=True)
+    cash_register_total_entry_encoding = fields.Monetary(compute='_compute_cash_all', string='Total Cash Transaction', help="Total of all paid sales orders")
+    cash_register_balance_end = fields.Monetary(compute='_compute_cash_all', string="Theoretical Closing Balance", help="Sum of opening balance and transactions.", readonly=True)
+    cash_register_difference = fields.Monetary(compute='_compute_cash_all', string='Difference', help="Difference between the theoretical closing balance and the real closing balance.")
 
-    journal_ids = fields.Many2many(
-        'account.journal',
-        related='config_id.journal_ids',
-        readonly=True,
-        string='Available Payment Methods')
+    journal_ids = fields.Many2many('account.journal', related='config_id.journal_ids', string='Available Payment Methods')
     order_ids = fields.One2many('account.payment', 'session_id',  string='Orders')
-    statement_ids = fields.One2many('account.bank.statement',
-                                    'cash_session_id', string='Bank Statement', readonly=True)
+    statement_ids = fields.One2many('account.bank.statement', 'cash_session_id', string='Bank Statement', readonly=True)
     picking_count = fields.Integer(compute='_compute_picking_count')
-    rescue = fields.Boolean(string='Recovery Session',
-                            help="Auto-generated session for orphan orders, ignored in constraints",
-                            readonly=True,
-                            copy=False)
+    rescue = fields.Boolean(string='Recovery Session', help="Auto-generated session for orphan orders, ignored in constraints", readonly=True, copy=False)
     cashbox_lines_ids = fields.One2many('account.cashbox.line', 'cash_session_id', string="Cashbox Lines", ondelete='cascade')
 
-    _sql_constraints = [('uniq_name', 'unique(name)',
-                         "The name of this Cash Session must be unique !")]
+    _sql_constraints = [('uniq_name', 'unique(name)', "The name of this Cash Session must be unique !")]
 
-    #@api.multi
+    # @api.multi
     def _compute_picking_count(self):
         for pos in self:
             pickings = pos.order_ids.mapped('picking_id').filtered(lambda x: x.state != 'done')
             pos.picking_count = len(pickings.ids)
 
-    ##@api.multi
-    #def action_stock_picking(self):
+    # @api.multi
+    # def action_stock_picking(self):
     #    pickings = self.order_ids.mapped('picking_id').filtered(lambda x: x.state != 'done')
     #    action_picking = self.env.ref('stock.action_picking_tree_ready')
     #    action = action_picking.read()[0]
@@ -131,11 +82,11 @@ class CashSession(models.Model):
                         session.cash_register_id = statement.id
                         balance_start += statement.balance_start
                         balance_end += statement.balance_end
-                        balance_end_real += statement.balance_end_real 
+                        balance_end_real += statement.balance_end_real
                         total_entry_encoding += statement.total_entry_encoding
                         difference += statement.difference
-                #if not session.cash_control and session.state != 'closed':
-                #raise UserError(_("Cash control can only be applied to cash journals."))
+                # if not session.cash_control and session.state != 'closed':
+                # raise UserError(_("Cash control can only be applied to cash journals."))
             session.cash_register_balance_start = saldo_inicial + balance_start
             session.cash_register_balance_end = balance_end
             session.cash_register_balance_end_real = balance_end_real

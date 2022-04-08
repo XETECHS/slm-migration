@@ -39,11 +39,11 @@ class AccountBankStatement(models.Model):
     #        statement.message_post(body=_('Statement %s confirmed, journal items were created.') % (statement.name,))
     #    statements.write({'state': 'confirm', 'date_done': time.strftime("%Y-%m-%d %H:%M:%S")})
 
-AccountBankStatement()
 
 class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
 
-    cash_statement_id = fields.Many2one('account.payment', string="Cash statement", ondelete='cascade')
+    # cash_statement_id = fields.Many2one('account.payment', string="Cash statement", ondelete='cascade')
+    cash_statement_id = fields.Many2one('account.payment', string="Cash statement")
     is_internal = fields.Boolean('Internal', required=False, default=False)
     is_reconcile = fields.Boolean('Reconcile', required=False, default=False)

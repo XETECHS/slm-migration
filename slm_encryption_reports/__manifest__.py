@@ -31,7 +31,7 @@
     'maintainer': 'XETECHS, S.A.',
     'website': 'https://www.xetechs.com',
     'category': 'account',
-    'depends': ['base', 'account', 'account_reports', 'slm_custom_field'],
+    'depends': ['base', 'account', 'account_reports', 'slm_custom_field', 'branch_accounting_report'],
     'license': 'AGPL-3',
 
     # always loaded

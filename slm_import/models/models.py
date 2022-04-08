@@ -8,6 +8,7 @@ from xlrd import open_workbook, XLRDError, XL_CELL_EMPTY, XL_CELL_BLANK
 from odoo.exceptions import UserError, AccessError
 from dateutil.parser import parse
 
+# pip install xlrd==1.2.0
 
 class ImportFile(models.Model):
     _name = 'slm.import.file'
@@ -32,7 +33,7 @@ class ImportFile(models.Model):
                                   required=True, auto_join=True)
     state = fields.Selection(
         [('uploaded', 'Uploaded'), ('unbalanced', 'Unbalanced'), ('error', 'Error'), ('verified', 'Verified'),
-         ('entry', 'Journal created'), ('posted', 'Posted')], string='Status', readonly=True, copy=False)
+         ('entry', 'Journal created'), ('posted', 'Posted')], string='Status', readonly=True, copy=False, default="uploaded")
     company = fields.Many2one('res.company', string='Company', ondelete="cascade", index=True,
                               required=True, auto_join=True, default=2)
     move_id = fields.Many2one('account.move', string='Journal Entry', ondelete="cascade", index=True,
@@ -66,26 +67,53 @@ class ImportFile(models.Model):
 
     @api.model
     def create(self, values):
-        values['state'] = 'uploaded'
-        sheets = self._get_sheets(values['file'])
-        if sheets:
-            values['sheet_ids'] = sheets
+        # values['state'] = 'uploaded'
+        # sheets = self._get_sheets(values['file'])
+        # if sheets:
+        #     values['sheet_ids'] = sheets
         res = super(ImportFile, self).create(values)
-        sheet_ids = [{'id': sheet.id, 'name': sheet.name} for sheet in res.sheet_ids]
-        row_ids = self._import_rows(sheet_ids, values['month'], values['year'], values['file'])
-        res.update({'row_ids': row_ids})
-        self._calculate_usd_amounts(res.id)
-        error_ids = self._get_errors(res)
-        res.update({'error_ids': error_ids})
-        balance = self._get_balance(res.id)
-        if int(balance) == 0 and not error_ids:
-            res.update({'state': 'verified'})
-        elif not error_ids:
-            res.update({'state': 'unbalanced'})
-        else:
-            res.update({'state': 'error'})
+        # sheet_ids = [{'id': sheet.id, 'name': sheet.name} for sheet in res.sheet_ids]
+        # print ("sheet_ids", sheet_ids)
+        # # row_ids = self._import_rows(sheet_ids, values['month'], values['year'], values['file'])
+        # # res.update({'row_ids': row_ids})
+        # self._calculate_usd_amounts(res.id)
+        # error_ids = self._get_errors(res)
+        # res.update({'error_ids': error_ids})
+        # balance = self._get_balance(res.id)
+        # if int(balance) == 0 and not error_ids:
+        #     res.update({'state': 'verified'})
+        # elif not error_ids:
+        #     res.update({'state': 'unbalanced'})
+        # else:
+        #     res.update({'state': 'error'})
 
         return res
+
+    def read_file(self):
+        sheets = False
+        try:
+            wb = open_workbook(file_contents=base64.decodebytes(self.file))
+            sheets = [(0, 0, {'name': sheet_name, 'rows': wb.sheet_by_name(sheet_name).nrows}) for sheet_name in wb.sheet_names()]
+        except Exception as e:
+            raise UserError(_("Sorry, Your excel file does not match with our format " + str(e)))
+        if sheets:
+            self.sheet_ids = sheets
+            self.write({'state': 'uploaded'})
+            sheet_ids = [{'id': sheet.id, 'name': sheet.name} for sheet in self.sheet_ids]
+            row_ids = self._import_rows(sheet_ids)
+            self.update({'row_ids': row_ids})
+            self._calculate_usd_amounts(self.id)
+            error_ids = self._get_errors(self)
+            self.update({'error_ids': error_ids})
+
+            balance = self._get_balance(self.id)
+            if int(balance) == 0 and not error_ids:
+                self.update({'state': 'verified'})
+            elif not error_ids:
+                self.update({'state': 'unbalanced'})
+            else:
+                self.update({'state': 'error'})
+        return True
 
     def write(self, values):
         res = super(ImportFile, self).write(values)
@@ -94,15 +122,19 @@ class ImportFile(models.Model):
     def _get_sheets(self, file=None):
         print ("files", file)
         try:
-            wb = open_workbook(file_contents=base64.decodestring(file))
+            wb = open_workbook(file_contents=base64.decodebytes(file))
+            # wb = open_workbook(file_contents=file)
             return [(0, 0, {'name': sheet_name, 'rows': wb.sheet_by_name(sheet_name).nrows})
                     for sheet_name in wb.sheet_names()]
         except Exception as e:
-            raise UserError(_("Sorry, Your excel file does not match with our format" + str(e)))
+            raise UserError(_("Sorry, Your excel file does not match with our format " + str(e)))
 
-    def _import_rows(self, sheets, month, year, file=None):
+    def _import_rows(self, sheets):
+        month = self.month
+        year = self.year
+        file = self.file
         try:
-            wb = open_workbook(file_contents=base64.decodestring(file))
+            wb = open_workbook(file_contents=base64.decodebytes(file))
             # wb = open_workbook(file_contents=base64.b64decode(file))
             skipped_line_no = {}
             row_ids = []

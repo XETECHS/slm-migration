@@ -48,5 +48,3 @@ class CashConfig(models.Model):
             'name': config_name,
         })
         return super(CashConfig, self).create(values)
-
-CashConfig()

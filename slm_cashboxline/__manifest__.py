@@ -16,7 +16,7 @@
     'data': [
             'reports/slm_cashboxline.xml',
             # 'reports/purchase_book_report.xml',
-            'reports/cashboxline_pdf_menu.xml'
+            # 'reports/cashboxline_pdf_menu.xml'
              ],
     'demo': [],
     # 'images': ['static/description/banner.jpg'],

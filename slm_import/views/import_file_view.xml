@@ -21,6 +21,8 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
+                        <!-- read_file -->
+                        <button name="read_file" string="Read File" states="uploaded" type="object" class="oe_highlight"/>
                         <button name="action_create" states="verified" string="Create Entry" type="object" class="oe_highlight"
                                 groups="base.group_system"/>
                         <button name="action_create_post" states="verified" string="Create Entry and Post" type="object" class="oe_highlight"
@@ -45,9 +47,9 @@
                                 <field name="move_id" attrs="{'invisible':[('state','!=', 'entry'), ('state','!=', 'posted')]}"/>
                             </group>
                             <group>
-                                <h5 colspan="2" attrs="{'invisible':[('state','==',False)]}">Sheets</h5>
+                                <h5 colspan="2" attrs="{'invisible':[('state','=','uploaded')]}">Sheets</h5>
                                 <link rel="stylesheet" href="/slm_import/static/css/style.css?version=1"/>
-                                <field name="sheet_ids" string="" attrs="{'invisible':[('state','==',False)]}"
+                                <field name="sheet_ids" string="" attrs="{'invisible':[('state','=', 'uploaded')]}"
                                        widget="one2many_list" mode="tree,kanban" nolabel="1" colspan="8">
                                     <tree string="Test" class="sheets">
                                         <field name="name"/>
@@ -59,7 +61,7 @@
                                 </field>
                             </group>
                         </group>
-                        <notebook attrs="{'invisible':[('state','==',False)]}">
+                        <notebook attrs="{'invisible':[('state','=', 'uploaded')]}">
                             <page string="Rows">
                                 <field name="row_ids" widget="one2many_list"
                                        mode="tree,kanban" nolabel="1"

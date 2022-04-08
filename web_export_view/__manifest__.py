@@ -18,17 +18,17 @@
         'web',
     ],
     "data": [
-        'security/groups.xml',
+        # 'security/groups.xml',
         # 'views/web_export_view_view.xml',
     ],
     'qweb': [
-        "static/src/xml/web_export_view_template.xml",
+        # "static/src/xml/web_export_view_template.xml",
     ],
-    'assets': {
-        'web.assets_backend': [
-            'web_export_view/static/src/js/web_export_view.js',
-        ],
-    },
+    # 'assets': {
+    #     'web.assets_backend': [
+    #         'web_export_view/static/src/js/web_export_view.js',
+    #     ],
+    # },
     'installable': True,
     'auto_install': False,
 }
