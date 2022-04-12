@@ -16,7 +16,7 @@ from . import inherited_account_bank_statement_line
 from . import inherited_customer
 from . import inherited_product
 from . import ir_http
-from . import account_move
+# from . import account_move
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
