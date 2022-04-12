@@ -49,7 +49,8 @@
         </template>
 
         <template id="lpl_search_template" inherit_id="account_reports.search_template">
-            <xpath expr="//div[@class='btn-group dropdown o_account_reports_filter_analytic']" position="after">
+            <!-- <xpath expr="//div[@class='o_account_reports_filter_analytic']" position="after"> -->
+            <xpath expr="//div[hasclass('o_account_reports_filter_analytic')]" position="after">
                 <div class="btn-group dropdown o_account_reports_filter_encryption"
                      t-if="options.get('tags') != None">
                     <t t-call="slm_lpl_reports.search_template_tag"/>
