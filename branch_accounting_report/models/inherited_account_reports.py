@@ -7,6 +7,7 @@ class AccountReport(models.AbstractModel):
     _inherit = 'account.report'
 
     filter_branch = None
+    MAX_LINES = 1000
 
     @api.model
     def _init_filter_branch(self, options, previous_options=None):
