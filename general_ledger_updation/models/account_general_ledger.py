@@ -22,7 +22,7 @@ class AccountGeneralLedgerReport(models.AbstractModel):
 
     def _get_templates(self):
         templates = super(AccountGeneralLedgerReport, self)._get_templates()
-        templates['main_template'] = 'general_ledger_updation.inherit_account_reports'
+        templates['main_template'] = 'account_reports.main_template_with_filter_input_accounts'
         templates['line_template'] = 'account_reports.line_template_general_ledger_report'
         return templates
 
