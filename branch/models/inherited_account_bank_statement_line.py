@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 
 
 class account_bank_statement_line(models.Model):
@@ -16,10 +16,7 @@ class account_bank_statement_line(models.Model):
             branch_id = self._context.get('branch_id')
         elif self.env.user.branch_id:
             branch_id = self.env.user.branch_id.id
-        res.update({
-            'branch_id' : branch_id
-        })
+        res.update({'branch_id': branch_id})
         return res
 
     branch_id = fields.Many2one('res.branch', string='Branch')
-

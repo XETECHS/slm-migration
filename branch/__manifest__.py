@@ -45,8 +45,8 @@
   odoo operating Units for Purchase operating Unit for all operating Unit for Accounting operating Unit for invoicing
   odoo operating Unit for Payment order operating Unit for point of sales operating Unit for voucher operating Unit for All Accounting reports operating Unit Accounting filter.
   odoo Operating unit for picking operating unit for warehouse operating unit for sale stock operating unit for location
-odoo operating-Unit Operation for POS operating-Unit Operation for Sales operating-Unit operation for Purchase operating-Unit operation for all 
-odoo operating-Unit operation for Accounting operating-Unit Operation for invoicing operating-Unit operation for Payment order operating-Unit operation for point of sales 
+odoo operating-Unit Operation for POS operating-Unit Operation for Sales operating-Unit operation for Purchase operating-Unit operation for all
+odoo operating-Unit operation for Accounting operating-Unit Operation for invoicing operating-Unit operation for Payment order operating-Unit operation for point of sales
 odoo operating-Unit operation for voucher operating-Unit operation for All Accounting reports operating-Unit operation Accounting filter.
 odoo multi branches management odoo branches management odoo multiple branches management on odoo branchs mananegement
 odoo many branches for single company odoo
@@ -83,14 +83,18 @@ odoo many branches for single company odoo
        all in one multi branch application multi branch unit operation multi unit operation branch management
        odoo multi branches management application multi operation management
 
-operating Unit for POS,operating Unit for Sales,operating Unit for Purchase,operating Unit for all,operating Unit for Accounting,operating Unit for invoicing,operating Unit for Payment order,operating Unit for point of sales,operating Unit for voucher,operating Unit for All Accounting reports,operating Unit Accounting filter. Operating unit for picking, operating unit for warehouse, operating unit for sale stock, operating unit for location
-operating-Unit Operation for POS,operating-Unit Operation for Sales,operating-Unit operation for Purchase,operating-Unit operation for all, operating-Unit operation for Accounting,operating-Unit Operation for invoicing,operating-Unit operation for Payment order,operating-Unit operation for point of sales,operating-Unit operation for voucher,operating-Unit operation for All Accounting reports,operating-Unit operation Accounting filter.
+operating Unit for POS,operating Unit for Sales,operating Unit for Purchase,operating Unit for all,operating Unit for Accounting,operating Unit for invoicing,
+operating Unit for Payment order,operating Unit for point of sales,operating Unit for voucher,operating Unit for All Accounting reports,operating Unit Accounting filter. Operating unit for picking,
+operating unit for warehouse, operating unit for sale stock, operating unit for location
+operating-Unit Operation for POS,operating-Unit Operation for Sales,operating-Unit operation for Purchase,operating-Unit operation for all, operating-Unit operation for Accounting,
+operating-Unit Operation for invoicing,operating-Unit operation for Payment order,operating-Unit operation for point of sales,operating-Unit operation for voucher,operating-Unit operation for All Accounting reports,
+operating-Unit operation Accounting filter.
     """,
     'author': 'BrowseInfo',
     'website': 'https://www.browseinfo.in',
     "price": 149.00,
     "currency": 'EUR',
-    'depends': ['base', 'sale_management', 'purchase', 'stock', 'account', 'purchase_stock','web'],
+    'depends': ['base', 'sale_management', 'purchase', 'stock', 'account', 'purchase_stock', 'web'],
     'uninstall_hook': '_uninstall_hook',
     'data': [
         'security/branch_security.xml',
@@ -110,7 +114,7 @@ operating-Unit Operation for POS,operating-Unit Operation for Sales,operating-Un
         'views/inherited_product.xml',
         'views/inherited_partner.xml',
     ],
-    'assets': {    
+    'assets': {
         'web.assets_qweb': [
             'branch/static/src/xml/branch.xml'
         ],
@@ -119,13 +123,13 @@ operating-Unit Operation for POS,operating-Unit Operation for Sales,operating-Un
             'branch/static/src/js/session.js',
         ]
     },
-    'license' : 'OPL-1',
+    'license': 'OPL-1',
     'demo': [],
     'test': [],
     'installable': True,
     'auto_install': False,
-    'live_test_url':'https://youtu.be/hi1b8kH5Z94',
-    "images":['static/description/Banner.png'],
+    'live_test_url': 'https://youtu.be/hi1b8kH5Z94',
+    "images": ['static/description/Banner.png'],
     'post_init_hook': 'post_init_hook',
 }
 
