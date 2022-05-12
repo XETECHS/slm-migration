@@ -35,7 +35,7 @@ Import Data
     'maintainer': 'XETECHS, S.A.',
     'website': 'https://www.xetechs.com',
     'category': 'account',
-    'depends': ['base', 'account', 'stock'],
+    'depends': ['base', 'account', 'stock', 'account_reports', 'branch_accounting_report'],
     'license': 'AGPL-3',
     'data': [
         # 'security/ir.model.access.csv',

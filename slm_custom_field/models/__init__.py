@@ -25,3 +25,4 @@ from . import destination_city
 from . import flight_list
 from . import mandatory_analytic_account
 from . import account_payment
+from . import inherited_account_general_ledger
