@@ -120,7 +120,6 @@ class ImportFile(models.Model):
         return res
 
     def _get_sheets(self, file=None):
-        print ("files", file)
         try:
             wb = open_workbook(file_contents=base64.decodebytes(file))
             # wb = open_workbook(file_contents=file)
@@ -129,10 +128,32 @@ class ImportFile(models.Model):
         except Exception as e:
             raise UserError(_("Sorry, Your excel file does not match with our format " + str(e)))
 
+    def _chck_file_date(self, sheets):
+        file = self.file
+        try:
+            wb = open_workbook(file_contents=base64.decodebytes(file))
+            for sheet_dict in sheets:
+                sheet = wb.sheet_by_name(sheet_dict['name'])
+                for row in range(sheet.nrows):
+                    try:
+                        if row > 0:
+                            month = sheet.cell(row, 7).value
+                            m = "%02d" % int(month)
+                            year = sheet.cell(row, 8).value
+                            y = int(year)
+                            if y != self.year and m != self.month:
+                                raise UserError(_("Sorry, Your excel file does not match with Month Year as per selected %s-%s" % (self.month, self.year)))
+                    except Exception as e:
+                        raise UserError(_("Sorry, Your excel file does not match with Month Year as per selected %s-%s" % (self.month, self.year)))
+        except Exception as e:
+            print (">>", e)
+            raise UserError(_("Sorry, Your excel file does not match with Month Year as per selected %s-%s" % (self.month, self.year)))
+
     def _import_rows(self, sheets):
         month = self.month
         year = self.year
         file = self.file
+        self._chck_file_date(sheets)
         try:
             wb = open_workbook(file_contents=base64.decodebytes(file))
             # wb = open_workbook(file_contents=base64.b64decode(file))
@@ -523,7 +544,6 @@ class ImportFile(models.Model):
 
         params = (name, account_move_id, name, self.company.id, self.company.id, self.id)
         self.env.cr.execute(insert_account_move_line, params)
-        print ("account_move_id", account_move_id)
         self.update({
             'state': 'entry' if state == 'draft' else 'posted',
             'move_id': account_move_id
