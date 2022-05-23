@@ -11,16 +11,16 @@
                     <page string="More Information">
                         <group>
                             <group>
-                                <field name="pnr"/>
-                                <field name="faktnr"/>
-                                <field name="omschr"/>
-                                <field name="controlle"/>
+                                <field name="pnr" optional="show" />
+                                <field name="faktnr" optional="show" />
+                                <field name="omschr" optional="show"/>
+                                <field name="controlle" optional="show"/>
                             </group>
                             <group>
-                                <field name="bedrsrd"/>
-                                <field name="bedrusd"/>
-                                <field name="opercde"/>
-                                <field name="regnr"/>
+                                <field name="bedrsrd" optional="show"/>
+                                <field name="bedrusd" optional="show"/>
+                                <field name="opercde" optional="show"/>
+                                <field name="regnr" optional="show"/>
                                 <field name="vlnr" attrs="{'required': [('required_flight_number', '=', True)]}"/>
                                 <field name="required_flight_number" invisible="1"/>
                                 <field name="required_analytic_account" invisible="1"/>
@@ -73,35 +73,35 @@
                     <attribute name="attrs">{'required': [('move_type', '!=', 'entry')]}</attribute>
                 </xpath>
                 <xpath expr='//field[@name="account_internal_group"]' position="after">
-                    <field name="pnr"/>
-                    <field name="faktnr"/>
-                    <field name="omschr"/>
-                    <field name="controlle"/>
-                    <field name="bedrsrd"/>
-                    <field name="bedrusd"/>
-                    <field name="opercde"/>
-                    <field name="regnr"/>
-                    <field name="vlnr" attrs="{'required': [('required_flight_number', '=', True)]}"/>
-                    <field name="gallon"/>
-                    <field name="plcde"/>
-                    <field name="handl"/>
-                    <field name="maalt"/>
-                    <field name="pax"/>
-                    <field name="mandgn"/>
-                    <field name="sdatum"/>
-                    <field name="kstnpl6"/>
-                    <field name="kstnpl7"/>
-                    <field name="persnr" string="SEATS"/>
-                    <field name="ponr" string="CARGO KG"/>
-                    <field name="galprijs"/>
-                    <field name="betrekdg"/>
-                    <field name="betrekmd"/>
-                    <field name="betrekjr"/>
-                    <field name="factdg"/>
-                    <field name="factmd"/>
-                    <field name="factjr"/>
-                    <field name="vltype"/>
-                    <field name="vltreg"/>
+                    <field name="pnr" optional="show"/>
+                    <field name="faktnr" optional="show"/>
+                    <field name="omschr" optional="show"/>
+                    <field name="controlle" optional="show"/>
+                    <field name="bedrsrd" optional="show"/>
+                    <field name="bedrusd" optional="show"/>
+                    <field name="opercde" optional="show"/>
+                    <field name="regnr" optional="show"/>
+                    <field name="vlnr" optional="show" attrs="{'required': [('required_flight_number', '=', True)]}"/>
+                    <field name="gallon" optional="show"/>
+                    <field name="plcde" optional="show"/>
+                    <field name="handl" optional="show"/>
+                    <field name="maalt" optional="show"/>
+                    <field name="pax" optional="show"/>
+                    <field name="mandgn" optional="show"/>
+                    <field name="sdatum" optional="show"/>
+                    <field name="kstnpl6" optional="show"/>
+                    <field name="kstnpl7" optional="show"/>
+                    <field name="persnr" optional="show" string="SEATS"/>
+                    <field name="ponr" optional="show" string="CARGO KG"/>
+                    <field name="galprijs" optional="show"/>
+                    <field name="betrekdg" optional="show"/>
+                    <field name="betrekmd" optional="show"/>
+                    <field name="betrekjr" optional="show"/>
+                    <field name="factdg" optional="show"/>
+                    <field name="factmd" optional="show"/>
+                    <field name="factjr" optional="show"/>
+                    <field name="vltype" optional="show"/>
+                    <field name="vltreg" optional="show"/>
                     <field name="required_flight_number" invisible="1"/>
                     <field name="required_analytic_account" invisible="1"/>
                 </xpath>

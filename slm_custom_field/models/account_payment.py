@@ -17,13 +17,13 @@ class AccountAbstractPayment(models.Model):
 
         move = self.env['account.move'].create(self._get_move_vals())
 
-        #Write line corresponding to invoice payment
+        # Write line corresponding to invoice payment
         counterpart_aml_dict = self._get_shared_move_line_vals(debit, credit, amount_currency, move.id, False)
         counterpart_aml_dict.update(self._get_counterpart_move_line_vals(self.invoice_ids))
         counterpart_aml_dict.update({'currency_id': currency_id})
         counterpart_aml = aml_obj.create(counterpart_aml_dict)
 
-        #Reconcile with the invoices
+        # Reconcile with the invoices
         if self.payment_difference_handling == 'reconcile' and self.payment_difference:
             writeoff_line = self._get_shared_move_line_vals(0, 0, 0, move.id, False)
             debit_wo, credit_wo, amount_currency_wo, currency_id = aml_obj.with_context(date=self.payment_date)._compute_amount_fields(self.payment_difference, self.currency_id, self.company_id.currency_id)
@@ -41,7 +41,7 @@ class AccountAbstractPayment(models.Model):
                 counterpart_aml['credit'] += debit_wo - credit_wo
             counterpart_aml['amount_currency'] -= amount_currency_wo
 
-        #Write counterpart lines
+        # Write counterpart lines
         if not self.currency_id.is_zero(self.amount):
             if not self.currency_id != self.company_id.currency_id:
                 amount_currency = 0
@@ -49,11 +49,11 @@ class AccountAbstractPayment(models.Model):
             liquidity_aml_dict.update(self._get_liquidity_move_line_vals(-amount))
             aml_obj.create(liquidity_aml_dict)
 
-        #validate the payment
+        # validate the payment
         if not self.journal_id.post_at_bank_rec:
             move.post()
 
-        #reconcile the invoice receivable/payable line(s) with the payment
+        # reconcile the invoice receivable/payable line(s) with the payment
         if self.invoice_ids:
             self.invoice_ids.register_payment(counterpart_aml)
 

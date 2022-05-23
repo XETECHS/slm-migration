@@ -21,7 +21,7 @@ class MandatoryAnalyticAccount(models.Model):
                    JOIN account_account AA ON (AA.id = AAM.account_id)
                    JOIN account_analytic_account_account_analytic_mandatory_rel AMV
                      on AAM.id = AMV.account_analytic_mandatory_id
-            WHERE AA.code = %s 
+            WHERE AA.code = %s
         """
 
         cr.execute(sql, (code,))

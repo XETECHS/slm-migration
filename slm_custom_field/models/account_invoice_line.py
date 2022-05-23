@@ -1,7 +1,7 @@
 # -*- encoding: UTF-8 -*-
 
 from odoo import api, fields, models, _
-from .mandatory_analytic_account import MandatoryAnalyticAccount
+from . mandatory_analytic_account import MandatoryAnalyticAccount
 
 
 class AccountInvoiceLine(models.Model):

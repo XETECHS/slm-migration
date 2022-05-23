@@ -7,14 +7,14 @@
             <field name="model">flight.list</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="name"/>
-                    <field name="stop1"/>
-                    <field name="stop2"/>
-                    <field name="stop3"/>
-                    <field name="stop4"/>
-                    <field name="opercde1"/>
-                    <field name="retvlnr"/>
-                    <field name="description"/>
+                    <field name="name" optional="show"/>
+                    <field name="stop1" optional="show"/>
+                    <field name="stop2" optional="show"/>
+                    <field name="stop3" optional="show"/>
+                    <field name="stop4" optional="show"/>
+                    <field name="opercde1" optional="show"/>
+                    <field name="retvlnr" optional="show"/>
+                    <field name="description" optional="show"/>
                 </tree>
             </field>
         </record>

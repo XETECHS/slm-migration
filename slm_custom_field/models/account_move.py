@@ -101,6 +101,3 @@ class AccountMoveLine(models.Model):
                 if MandatoryAnalyticAccount.check_required_fligh_number(record.account_id.code, record.analytic_account_id.id,
                                                                         self.env.cr):
                     record.required_flight_number = True
-
-
-AccountMoveLine()
