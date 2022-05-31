@@ -6,6 +6,7 @@ from odoo import fields, models, api
 class AccountAbstractPayment(models.Model):
     _inherit = "account.payment"
 
+    invoice_number = fields.Char(string="PNR/Airwaybill/Invoice")
     writeoff_analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account', copy=False)
 
     def _create_payment_entry(self, amount):

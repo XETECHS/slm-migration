@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-
-        <record model="ir.ui.view" id="view_account_payment_invoice_form_slm">
+        <record id="view_account_payment_invoice_form_slm" model="ir.ui.view">
             <field name="name">view_account.payment.invoice.form.slm</field>
             <field name="model">account.payment</field>
             <field name="inherit_id" ref="account.view_account_payment_invoice_form"/>
             <field name="arch" type="xml">
-                <xpath expr='//field[@name="writeoff_account_id"]' position="after">
-                    <label for="writeoff_analytic_account_id" class="oe_edit_only" string="Analytic account"/>
-                    <field name="writeoff_analytic_account_id" string="Analytic account"
-                           attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}"/>
+                <xpath expr="//field[@name=&quot;payment_method_line_id&quot;]" position="after">
+                    <field attrs="{'required': [('payment_type', '=', inbound)]}" name="invoice_number"/>
+                </xpath>
+                <xpath expr="//field[@name=&quot;writeoff_account_id&quot;]" position="after">
+                    <label class="oe_edit_only" for="writeoff_analytic_account_id" string="Analytic account"/>
+                    <field attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}" name="writeoff_analytic_account_id" string="Analytic account"/>
                 </xpath>
             </field>
         </record>
