@@ -4,15 +4,15 @@
         <record id="view_account_payment_invoice_form_slm" model="ir.ui.view">
             <field name="name">view_account.payment.invoice.form.slm</field>
             <field name="model">account.payment</field>
-            <field name="inherit_id" ref="account.view_account_payment_invoice_form"/>
+            <field name="inherit_id" ref="account.view_account_payment_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name=&quot;payment_method_line_id&quot;]" position="after">
                     <field attrs="{'required': [('payment_type', '=', inbound)]}" name="invoice_number"/>
                 </xpath>
-                <xpath expr="//field[@name=&quot;writeoff_account_id&quot;]" position="after">
+                <!-- <xpath expr="//field[@name=&quot;writeoff_account_id&quot;]" position="after">
                     <label class="oe_edit_only" for="writeoff_analytic_account_id" string="Analytic account"/>
                     <field attrs="{'required': [('payment_difference_handling', '=', 'reconcile')]}" name="writeoff_analytic_account_id" string="Analytic account"/>
-                </xpath>
+                </xpath> -->
             </field>
         </record>
     </data>

@@ -43,7 +43,7 @@ Import Data
         'views/airfare_details_view.xml',
         'views/flight_list_view.xml',
         'views/mandatory_analytic_account_view.xml',
-        # 'views/account_payment_view.xml',
+        'views/account_payment_view.xml',
         'templates/report_stockpicking_operations.xml',
         'templates/report_deliveryslip.xml',
     ],
