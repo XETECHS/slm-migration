@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="account.view_account_payment_form"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name=&quot;payment_method_line_id&quot;]" position="after">
-                    <field attrs="{'required': [('payment_type', '=', inbound)]}" name="invoice_number"/>
+                    <field attrs="{'required': [('payment_type', '=', 'inbound')]}" name="invoice_number"/>
                 </xpath>
                 <!-- <xpath expr="//field[@name=&quot;writeoff_account_id&quot;]" position="after">
                     <label class="oe_edit_only" for="writeoff_analytic_account_id" string="Analytic account"/>
