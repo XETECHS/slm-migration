@@ -45,7 +45,6 @@ class AccountMoveLine(models.Model):
     bedrusd = fields.Float('BEDRUSD')
     opercde = fields.Integer('OPERCDE')
     vlnr = fields.Many2one('flight.list', 'VLNR')
-    # vlnr = fields.Char('VLNR')
     gallon = fields.Float('GALLON')
     plcde = fields.Char('PLCDE')
     handl = fields.Char('HANDL', default="0")
