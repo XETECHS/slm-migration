@@ -11,8 +11,8 @@ from odoo import models, fields
 class Stock_Move(models.Model):
     _inherit = 'stock.move'
 
-    def _action_done(self):
-        res = super(Stock_Move, self)._action_done()
+    def _action_done(self, cancel_backorder=False):
+        res = super(Stock_Move, self)._action_done(cancel_backorder)
         for each_move in res:
             if each_move.inventory_id and each_move.inventory_id.is_backdated_inv:
                 each_move.write(
