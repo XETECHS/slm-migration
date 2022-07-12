@@ -7,11 +7,9 @@ from odoo import models, api
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    def _prepare_account_move_line(self, qty, cost,
-                                   credit_account_id, debit_account_id):
+    def _prepare_account_move_line(self, qty, cost, credit_account_id, debit_account_id, description):
         self.ensure_one()
-        res = super(StockMove, self)._prepare_account_move_line(
-            qty, cost, credit_account_id, debit_account_id)
+        res = super(StockMove, self)._prepare_account_move_line(qty, cost, credit_account_id, debit_account_id, description)
 
         # Add analytic account in debit line
         if self.analytic_account_id and res:

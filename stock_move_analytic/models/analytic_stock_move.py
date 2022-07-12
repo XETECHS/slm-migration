@@ -63,9 +63,9 @@ class StockMove(models.Model):
 
 # pylint: disable=R0913
     def _prepare_account_move_line(
-            self, qty, cost, credit_account_id, debit_account_id):
+            self, qty, cost, credit_account_id, debit_account_id, description):
         res = super(StockMove, self)._prepare_account_move_line(
-            qty, cost, credit_account_id, debit_account_id)
+            qty, cost, credit_account_id, debit_account_id, description)
         #raise UserError(_("%s") %(res))
         if res and res[1] and res[1][2]:
             analytic_acc = self._get_analytic_acc_from_move()
